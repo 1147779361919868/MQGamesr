@@ -28,9 +28,9 @@ public class TransUtil {
     public static boolean transResultMap = false;
 
 
-    private static Map<Class,Class> proxyClassMap = new ConcurrentHashMap<>();
+    private static Map<Class, Class> proxyClassMap = new ConcurrentHashMap<>();
 
-    private static Map<Class,Set<String>> proxyClassFieldMap = new ConcurrentHashMap<>();
+    private static Map<Class, Set<String>> proxyClassFieldMap = new ConcurrentHashMap<>();
 
     /**
      * 翻译集合
@@ -49,10 +49,14 @@ public class TransUtil {
             return param;
         }
         boolean isVo = false;
+        //防止二次翻译
+        if (param.iterator().next().getClass().getName().contains("DynamicTypeBuilder")) {
+            return param;
+        }
         if (param.iterator().next() instanceof VO) {
             transService.transMore(new ArrayList<>(param));
             for (Object tempObject : param) {
-                transFields(tempObject,transService,isProxy,hasTransObjs);
+                transFields(tempObject, transService, isProxy, hasTransObjs);
             }
 
             //vo 嵌套vo的时候不做
@@ -137,7 +141,7 @@ public class TransUtil {
         } else if (object.getClass().getName().startsWith("java.")) {
             return object;
         } else {
-            transFields(object,transService,isProxy,hasTransObjs);
+            transFields(object, transService, isProxy, hasTransObjs);
         }
         return (isProxy && isVo) ? createProxyVo((VO) object) : object;
     }
@@ -145,6 +149,7 @@ public class TransUtil {
 
     /**
      * 翻译一个object的子属性
+     *
      * @param object
      * @param transService
      * @param isProxy
@@ -169,14 +174,14 @@ public class TransUtil {
     }
 
 
-
     /**
      * 校验属性是否在class中都存在
+     *
      * @param propertes
      * @param clazz
      * @return
      */
-    private static boolean validProxyClass(Set<String> propertes,Class clazz){
+    private static boolean validProxyClass(Set<String> propertes, Class clazz) {
         Set<String> fieldSet = proxyClassFieldMap.get(clazz);
         return fieldSet.containsAll(propertes);
     }
@@ -184,18 +189,19 @@ public class TransUtil {
 
     /**
      * 生成新class
+     *
      * @param vo vo
      * @return
      */
-    public static Class genNewClass(VO vo){
+    public static Class genNewClass(VO vo) {
         try {
             Class targetClass = proxyClassMap.get(vo.getClass());
             boolean isGenNewClass = true;
             // 如果之前生成过class 并且不缺少字段则不重新生成class
-            if(targetClass != null && validProxyClass(vo.getTransMap().keySet(),targetClass)){
+            if (targetClass != null && validProxyClass(vo.getTransMap().keySet(), targetClass)) {
                 isGenNewClass = false;
             }
-            if(isGenNewClass){
+            if (isGenNewClass) {
                 DynamicType.Builder<? extends Object> builder = new ByteBuddy()
                         .subclass(vo.getClass())
                         .name(vo.getClass().getSimpleName() + "DynamicTypeBuilder" + StringUtil.getUUID())
@@ -206,18 +212,18 @@ public class TransUtil {
                     builder = builder.defineField(property, String.class, Modifier.PUBLIC);
                 }
 
-                targetClass =  builder.make()
+                targetClass = builder.make()
                         .load(ClassUtils.getDefaultClassLoader(), ClassLoadingStrategy.Default.INJECTION)
                         .getLoaded();
-                proxyClassMap.put(vo.getClass(),targetClass);
-                proxyClassFieldMap.put(targetClass,vo.getTransMap().keySet());
+                proxyClassMap.put(vo.getClass(), targetClass);
+                proxyClassFieldMap.put(targetClass, vo.getTransMap().keySet());
             }
             return targetClass;
         } catch (Exception e) {
-            if(e instanceof ClassNotFoundException){
+            if (e instanceof ClassNotFoundException) {
                 log.error("生成新class错误，目前不支持JDK17，请关闭平铺模式: easy-trans.is-enable-tile 设置为false");
-            }else{
-                log.error("生成新class错误",e);
+            } else {
+                log.error("生成新class错误", e);
             }
 
         }
@@ -226,6 +232,7 @@ public class TransUtil {
 
     /**
      * 创建新 vo
+     *
      * @param vo
      * @return
      */
@@ -236,16 +243,16 @@ public class TransUtil {
         try {
             Class clazz = genNewClass(vo);
             Object newObject = clazz.newInstance();
-            if(newObject == null){
+            if (newObject == null) {
                 return vo;
             }
-            BeanUtils.copyProperties(vo,newObject);
+            BeanUtils.copyProperties(vo, newObject);
             for (String property : vo.getTransMap().keySet()) {
-                ReflectUtils.setValue(newObject,property, ConverterUtils.toString(vo.getTransMap().get(property)));
+                ReflectUtils.setValue(newObject, property, ConverterUtils.toString(vo.getTransMap().get(property)));
             }
             return newObject;
         } catch (Exception e) {
-            log.error("easy trans 赋值错误",e);
+            log.error("easy trans 赋值错误", e);
         }
         return vo;
     }

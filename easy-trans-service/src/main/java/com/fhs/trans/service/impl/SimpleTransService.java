@@ -139,7 +139,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         // 合并相同的一次in过来
         for (String target : namespaceFieldsGroupMap.keySet()) {
             final List<Field> fields = namespaceFieldsGroupMap.get(target);
-            Trans tempTrans = fields.get(0).getAnnotation(Trans.class);
+            Trans tempTrans = new SimpleTrans(fields.get(0).getAnnotation(Trans.class));
             final Set<Object> ids = new HashSet<>();
             objList.forEach(obj -> {
                 for (Field field : fields) {
@@ -164,7 +164,8 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             });
             if (!ids.isEmpty()) {
                 if (transCacheSettMap.containsKey(getTargetClassName(tempTrans))) {
-                    Set<Object> newIds = initLocalFromGlobalCache(threadLocalCache, ids, getTargetClassName(tempTrans), TransType.SIMPLE);
+                    Set<Object> newIds = initLocalFromGlobalCache(threadLocalCache, ids, getTargetClassName(tempTrans), this.getClass() == SimpleTransService.class ?
+                            TransType.SIMPLE : TransType.RPC);
                     ids.clear();
                     ids.addAll(newIds);
                 }
@@ -233,8 +234,10 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      */
     private Map<String, Object> getTempTransCacheMap(Trans tempTrans, Object pkey) {
         String className = getTargetClassName(tempTrans);
-        if (transCacheSettMap.containsKey(className) && getFromGlobalCache(pkey, className, TransType.SIMPLE) != null) {
-            return getFromGlobalCache(pkey, className, TransType.SIMPLE);
+        String transType = this.getClass() == SimpleTransService.class ?
+                TransType.SIMPLE : TransType.RPC;
+        if (transCacheSettMap.containsKey(className) && getFromGlobalCache(pkey, className, transType) != null) {
+            return getFromGlobalCache(pkey, className, transType);
         } else if (this.threadLocalCache.get() == null) {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
@@ -256,12 +259,12 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         if (tempTrans.target() != com.fhs.core.trans.vo.TransPojo.class && !transCacheSettMap.containsKey(tempTrans.target())
                 && tempTrans.target().isAnnotationPresent(TransDefaultSett.class)) {
             TransDefaultSett transDefaultSett = tempTrans.target().getAnnotation(TransDefaultSett.class);
-            if(transDefaultSett.isUseCache()){
+            if (transDefaultSett.isUseCache()) {
                 TransCacheSett cacheSett = new TransCacheSett();
                 cacheSett.setMaxCache(transDefaultSett.maxCache());
                 cacheSett.setCacheSeconds(transDefaultSett.cacheSeconds());
                 cacheSett.setAccess(transDefaultSett.isAccess());
-                transCacheSettMap.put(tempTrans.target().getName(),cacheSett);
+                transCacheSettMap.put(tempTrans.target().getName(), cacheSett);
             }
         }
         return (tempTrans.target() == com.fhs.core.trans.vo.TransPojo.class
@@ -290,7 +293,8 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         if (transCacheSettMap.get(className) != null) {
             TransCacheSett cacheSett = transCacheSettMap.get(className);
             put2GlobalCache(tempCacheTransMap, cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
-                    className, TransType.SIMPLE);
+                    className, this.getClass() == SimpleTransService.class ?
+                            TransType.SIMPLE : TransType.RPC);
         }
         return tempCacheTransMap;
     }
@@ -301,8 +305,8 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param messageMap
      */
     public void onMessage(Map<String, Object> messageMap) {
-        String  messageType = ConverterUtils.toString(messageMap.get("messageType"));
-        switch (messageType){
+        String messageType = ConverterUtils.toString(messageMap.get("messageType"));
+        switch (messageType) {
             case "clear":
                 clearGlobalCache(ConverterUtils.toString(messageMap.get("pkey")),
                         ConverterUtils.toString(messageMap.get("target")),
