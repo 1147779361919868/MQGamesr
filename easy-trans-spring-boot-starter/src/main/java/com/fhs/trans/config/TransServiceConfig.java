@@ -225,10 +225,9 @@ public class TransServiceConfig implements InitializingBean {
     //表示监听一个频道
     @Bean
     @ConditionalOnProperty(name = "easy-trans.is-enable-redis", havingValue = "true")
-    MessageListenerAdapter listenerAdapter(TransMessageListener receiver) {
+    MessageListenerAdapter listenerAdapter(TransMessageListener receiver,RedisTemplate redisTemplate) {
         MessageListenerAdapter result = new MessageListenerAdapter(receiver, "handelMsg");
-        JdkSerializationRedisSerializer valSerializer = new JdkSerializationRedisSerializer();
-        result.setSerializer(valSerializer);
+        result.setSerializer(redisTemplate.getValueSerializer());
         return result;
     }
 
