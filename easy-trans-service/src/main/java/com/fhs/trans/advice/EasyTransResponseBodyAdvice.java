@@ -16,6 +16,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+/**
+ * 全局翻译实现
+ * @author wanglei
+ */
 @Slf4j
 @ControllerAdvice
 public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {

@@ -1,7 +1,11 @@
 package com.fhs.common.constant;
 
 import com.fhs.trans.ds.DataSourceSetter;
-
+/**
+ * 配置类
+ *
+ * @author wanglei
+ */
 public class TransConfig {
     /**
      * 多数据源

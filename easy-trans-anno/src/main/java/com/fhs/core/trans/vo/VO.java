@@ -4,13 +4,10 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fhs.core.trans.util.ReflectUtils;
-
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
  * 支持vo 即可进行翻译
@@ -34,8 +31,9 @@ public interface VO {
 
     default void clearTransCache() {
         //缓存60秒过期，避免内存泄露
-        Cache<String, Map<String, String>> cache = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).build();
-        TRANS_MAP_CACHE.set(cache.asMap());
+        Caffeine builder =  Caffeine.newBuilder();
+        builder.expireAfterWrite(60, TimeUnit.SECONDS);
+        TRANS_MAP_CACHE.set(builder.build().asMap());
     }
 
     /**

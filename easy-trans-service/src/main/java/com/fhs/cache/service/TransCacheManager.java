@@ -13,7 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 缓存管理器
+ * 翻译缓存管理器
+ * @author wanglei
  */
 public class TransCacheManager {
 

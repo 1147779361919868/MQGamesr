@@ -6,6 +6,7 @@ import com.fhs.cache.service.TransCacheManager;
 import com.fhs.common.constant.TransConfig;
 import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.trans.advice.EasyTransResponseBodyAdvice;
+import com.fhs.trans.advice.ReleaseTransCacheAdvice;
 import com.fhs.trans.aop.TransMethodResultAop;
 import com.fhs.trans.controller.TransProxyController;
 import com.fhs.trans.ds.DataSourceSetter;
@@ -95,6 +96,15 @@ public class TransServiceConfig implements InitializingBean {
     @Bean
     public DictionaryTransService dictionaryTransService() {
         return new DictionaryTransService();
+    }
+
+    /**
+     * 缓存释放
+     * @return
+     */
+    @Bean
+    public ReleaseTransCacheAdvice releaseTransCacheAdvice(){
+        return new ReleaseTransCacheAdvice();
     }
 
     /**

@@ -12,7 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * 二级缓存管理器
+ * 字典二级缓存服务
+ * @author wanglei
+ * @param <T>
  */
 @Data
 public class BothCacheService<T> {

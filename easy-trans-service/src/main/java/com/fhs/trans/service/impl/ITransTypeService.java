@@ -8,8 +8,8 @@ import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public interface ITransTypeService {
                 Cache<Object, Map<String, Object>> namespaceCache = GLOBAL_TRANS_CACHE.get(transType + namespace);
                 namespaceCache.put(ConverterUtils.toString(pkey), transResultMap);
             } else {
-                CacheBuilder builder = CacheBuilder.newBuilder();
+                Caffeine<Object, Object> builder =  Caffeine.newBuilder();
                 builder.maximumSize(max);
                 if (isAccess) {
                     builder.expireAfterAccess(cacheSeconds, TimeUnit.SECONDS);

@@ -3,7 +3,7 @@ package com.fhs.exception;
 
 /**
  * 参数错误
- * by 王磊
+ * @author wanglei
  */
 public class ParamException extends RuntimeException {
 
