@@ -42,10 +42,10 @@ public class TransUtil {
      */
     public static Collection transBatch(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException, InstantiationException {
         Collection param = (Collection) object;
-        if (param == null || param.iterator().next() == null) {
+        if (param == null) {
             return null;
         }
-        if (param.isEmpty()) {
+        if (param.isEmpty() || param.iterator().next() == null) {
             return param;
         }
         boolean isVo = false;
