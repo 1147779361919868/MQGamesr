@@ -11,14 +11,13 @@ import com.fhs.core.trans.anno.AutoTrans;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.trans.listener.TransMessageListener;
-import com.fhs.trans.service.AutoTransAble;
+import com.fhs.trans.service.AutoTransable;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.type.filter.TypeFilter;
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -62,7 +60,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
     /**
      * 基础服务
      */
-    private Map<String, AutoTransAble> baseServiceMap = new HashMap<>();
+    private Map<String, AutoTransable> baseServiceMap = new HashMap<>();
 
     /**
      * 配置
@@ -206,7 +204,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                         continue;
                     }
                     List<? extends VO> dbDatas = findByIds(() -> {
-                        return baseServiceMap.get(namespace).findByIds(new ArrayList<>(ids));
+                        return baseServiceMap.get(namespace).selectByIds(new ArrayList<>(ids));
                     }, null);
 
                     for (VO vo : dbDatas) {
@@ -236,11 +234,11 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             for (Class<?> entity : entitySet) {
                 // 获取该类
                 Object baseService = SpringContextUtil.getBeanByName(entity);
-                if (!(baseService instanceof AutoTransAble)) {
+                if (!(baseService instanceof AutoTransable)) {
                     continue;
                 }
                 AutoTrans autoTransSett = entity.getAnnotation(AutoTrans.class);
-                this.baseServiceMap.put(autoTransSett.namespace(), (AutoTransAble) baseService);
+                this.baseServiceMap.put(autoTransSett.namespace(), (AutoTransable) baseService);
                 this.transSettMap.put(autoTransSett.namespace(), autoTransSett);
             }
         }
@@ -443,7 +441,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
         this.redisTransCache = redisTransCache;
     }
 
-    public void regTransable(AutoTransAble transAble, AutoTrans autoTransSett) {
+    public void regTransable(AutoTransable transAble, AutoTrans autoTransSett) {
         this.baseServiceMap.put(autoTransSett.namespace(), transAble);
         this.transSettMap.put(autoTransSett.namespace(), autoTransSett);
     }

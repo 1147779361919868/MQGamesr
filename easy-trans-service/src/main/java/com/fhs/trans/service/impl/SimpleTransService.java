@@ -3,14 +3,12 @@ package com.fhs.trans.service.impl;
 import com.fhs.common.utils.CheckUtils;
 import com.fhs.common.utils.ConverterUtils;
 import com.fhs.common.utils.StringUtil;
-import com.fhs.core.trans.anno.AutoTrans;
 import com.fhs.core.trans.anno.Trans;
+import com.fhs.core.trans.anno.TransDefaultSett;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
-import com.fhs.core.trans.vo.TransPojo;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.ds.DataSourceSetter;
-import com.fhs.trans.listener.TransMessageListener;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +19,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -61,7 +60,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     public void transOne(VO obj, List<Field> toTransList) {
         Trans tempTrans = null;
         for (Field tempField : toTransList) {
-            tempTrans = tempField.getAnnotation(Trans.class);
+            tempTrans = new SimpleTrans(tempField.getAnnotation(Trans.class));
             String alias = tempTrans.alias();
             String pkey = ConverterUtils.toString(ReflectUtils.getValue(obj, tempField.getName()));
             if (StringUtils.isEmpty(pkey)) {
@@ -168,7 +167,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     ids.clear();
                     ids.addAll(newIds);
                 }
-                if(!ids.isEmpty()) {
+                if (!ids.isEmpty()) {
                     List<? extends VO> dbDatas = findByIds(new ArrayList<Object>(ids), tempTrans);
                     for (VO vo : dbDatas) {
                         threadLocalCache.get().put(getTargetClassName(tempTrans) + "_" + getUniqueKey(vo, tempTrans),
@@ -233,10 +232,9 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      */
     private Map<String, Object> getTempTransCacheMap(Trans tempTrans, Object pkey) {
         String className = getTargetClassName(tempTrans);
-        if(transCacheSettMap.containsKey(className) && getFromGlobalCache(pkey,className,TransType.SIMPLE) !=null){
-            return getFromGlobalCache(pkey,className,TransType.SIMPLE);
-        }
-        else if (this.threadLocalCache.get() == null) {
+        if (transCacheSettMap.containsKey(className) && getFromGlobalCache(pkey, className, TransType.SIMPLE) != null) {
+            return getFromGlobalCache(pkey, className, TransType.SIMPLE);
+        } else if (this.threadLocalCache.get() == null) {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
             }
@@ -254,7 +252,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @return
      */
     protected String getTargetClassName(Trans tempTrans) {
-        return (tempTrans.target() == TransPojo.class
+        return (tempTrans.target() == com.fhs.core.trans.vo.TransPojo.class
                 ? tempTrans.targetClassName() : tempTrans.target().getName());
     }
 
@@ -299,6 +297,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      */
     public void setTransCache(Object type, TransCacheSett cacheSett) {
         Class typeClass = (Class) type;
+
         this.transCacheSettMap.put(typeClass.getName(), cacheSett);
     }
 
@@ -336,6 +335,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TransCacheSett {
+
         /**
          * true 按照访问时间计算过期时间 false按照插入时间计算过期时间
          */
@@ -348,5 +348,107 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
          * 最大缓存数量
          */
         private int maxCache = 1000;
+    }
+}
+
+class SimpleTrans implements Trans {
+
+    private Trans anno;
+
+    /**
+     * 翻译字段
+     */
+    private String[] fields;
+
+    /**
+     * 别名
+     */
+    private String alias;
+
+    /**
+     * 唯一键
+     */
+    private String uniqueField;
+
+    private String dataSource;
+
+    public SimpleTrans(Trans anno) {
+        this.anno = anno;
+        Class<? extends com.fhs.core.trans.vo.TransPojo> clazz = (Class<? extends com.fhs.core.trans.vo.TransPojo>) anno.target();
+        if (clazz != null && clazz.isAnnotationPresent(TransDefaultSett.class)) {
+            TransDefaultSett transDefaultSett = clazz.getAnnotation(TransDefaultSett.class);
+            this.fields = transDefaultSett.defaultFields();
+            this.alias = transDefaultSett.defaultAlias();
+            this.uniqueField = transDefaultSett.uniqueField();
+            this.dataSource = transDefaultSett.dataSource();
+        }
+    }
+
+    @Override
+    public String type() {
+        return anno.type();
+    }
+
+    @Override
+    public String key() {
+        return anno.key();
+    }
+
+    @Override
+    public String ref() {
+        return anno.ref();
+    }
+
+    @Override
+    public String[] refs() {
+        return anno.refs();
+    }
+
+    @Override
+    public Class<? extends VO> target() {
+        return anno.target();
+    }
+
+    @Override
+    public String[] fields() {
+        if (anno.fields().length != 0 || fields == null) {
+            return anno.fields();
+        }
+        return (anno.fields().length != 0 || fields == null) ? anno.fields() : fields;
+    }
+
+    @Override
+    public String alias() {
+        return (anno.alias().length() != 0 || "".equals(alias)) ? anno.alias() : alias;
+    }
+
+    @Override
+    public String serviceName() {
+        return anno.serviceName();
+    }
+
+    @Override
+    public String targetClassName() {
+        return anno.targetClassName();
+    }
+
+    @Override
+    public String customeBeanFuncName() {
+        return anno.customeBeanFuncName();
+    }
+
+    @Override
+    public String dataSource() {
+        return (anno.dataSource().length() != 0 || "".equals(dataSource)) ? anno.dataSource() : dataSource;
+    }
+
+    @Override
+    public String uniqueField() {
+        return (anno.uniqueField().length() != 0 || "".equals(uniqueField)) ? anno.uniqueField() : uniqueField;
+    }
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return anno.annotationType();
     }
 }

@@ -2,11 +2,10 @@ package com.fhs.trans.extend;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.GlobalConfigUtils;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.fhs.core.trans.vo.VO;
-import com.fhs.trans.service.AutoTransAble;
+import com.fhs.trans.service.AutoTransable;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionUtils;
 
@@ -14,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MybatisPlusTransableAdapter implements AutoTransAble {
+public class MybatisPlusTransableAdapter implements AutoTransable {
 
     private Class<? extends VO> voClass;
 

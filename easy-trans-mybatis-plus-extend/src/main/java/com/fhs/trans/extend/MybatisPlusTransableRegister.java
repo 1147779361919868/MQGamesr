@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.core.trans.anno.AutoTrans;
 import com.fhs.core.trans.vo.VO;
-import com.fhs.trans.service.AutoTransAble;
+import com.fhs.trans.service.AutoTransable;
 import com.fhs.trans.service.impl.AutoTransService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class MybatisPlusTransableRegister implements ApplicationListener<Applica
                 }
                 // 获取该类
                 Object baseService = SpringContextUtil.getBeanByClass(entity);
-                if ((baseService instanceof AutoTransAble)) {
+                if ((baseService instanceof AutoTransable)) {
                     continue;
                 }
                 namespaceList.add(autoTransSett.namespace());

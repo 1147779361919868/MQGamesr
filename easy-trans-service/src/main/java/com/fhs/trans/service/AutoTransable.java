@@ -3,6 +3,7 @@ package com.fhs.trans.service;
 
 import com.fhs.core.trans.vo.VO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,14 +13,26 @@ import java.util.List;
  * @author jackwang
  * @date 2020-05-19 10:26:15
  */
-public interface AutoTransAble<V extends VO> {
+public interface AutoTransable<V extends VO> {
+
+    /**
+     * 根据ids查询，过期啦，请使用 selectByIds
+     * @param ids
+     * @return
+     */
+    @Deprecated
+    default List<V> findByIds(List<? extends Object> ids){
+        return new ArrayList<>();
+    }
 
     /**
      * 根据ids查询
-     *
-     * @return vo
+     * @param ids
+     * @return
      */
-    List<V> findByIds(List<? extends Object> ids);
+    default List<V> selectByIds(List<? extends Object> ids){
+        return this.findByIds(ids);
+    }
 
     /**
      * 获取db中所有的数据

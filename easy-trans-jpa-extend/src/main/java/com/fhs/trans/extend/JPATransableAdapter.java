@@ -2,7 +2,7 @@ package com.fhs.trans.extend;
 
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
-import com.fhs.trans.service.AutoTransAble;
+import com.fhs.trans.service.AutoTransable;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JPATransableAdapter implements AutoTransAble {
+public class JPATransableAdapter implements AutoTransable {
 
     private EntityManager em;
 
