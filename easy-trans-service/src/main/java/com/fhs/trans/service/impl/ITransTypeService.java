@@ -146,27 +146,38 @@ public interface ITransTypeService {
      * @param vo    等待被翻译的数据
      * @param val   翻译的值
      */
-    default void setRef(Trans trans, VO vo, String val) {
+    default boolean setRef(Trans trans, VO vo, String val) {
+        boolean isSetRef = false;
         if (CheckUtils.isNotEmpty(trans.ref())) {
             setValue(vo, trans.ref(), val);
+            isSetRef = true;
         }
         if (CheckUtils.isNotEmpty(trans.refs())) {
             Stream.of(trans.refs()).forEach(ref -> setValue(vo, ref, val));
+            isSetRef = true;
         }
+        return isSetRef;
     }
 
     default void setRef(Trans trans, VO vo, Map<String, ?> valMap) {
+        boolean isNeedClearValMap = false;
         if (CheckUtils.isNotEmpty(trans.ref())) {
             setRef(trans.ref(), vo, valMap);
+            isNeedClearValMap = true;
         }
         if (CheckUtils.isNotEmpty(trans.refs())) {
             for (int i = 0; i < trans.refs().length; i++) {
                 setRef(trans.refs()[i], vo, valMap, i);
             }
+            isNeedClearValMap = true;
+        }
+        if(isNeedClearValMap){
+            valMap.clear();
         }
     }
 
     default void setRef(Trans trans, VO vo, Map<String, ?> valMap, VO target) {
+        boolean isNeedClearValMap = false;
         if (CheckUtils.isNotEmpty(trans.ref())) {
             boolean isSetRef = false;
             if (target != null) {
@@ -178,17 +189,23 @@ public interface ITransTypeService {
                 if (field.getType() == target.getClass()) {
                     isSetRef = true;
                     ReflectUtils.setValue(vo, trans.ref(), target);
+                    isNeedClearValMap = true;
                 }
             }
             //没有set才去set
             if (!isSetRef) {
                 setRef(trans.ref(), vo, valMap);
+                isNeedClearValMap = true;
             }
         }
         if (CheckUtils.isNotEmpty(trans.refs())) {
             for (int i = 0; i < trans.refs().length; i++) {
                 setRef(trans.refs()[i], vo, valMap, i);
             }
+            isNeedClearValMap = true;
+        }
+        if(isNeedClearValMap){
+            valMap.clear();
         }
     }
 

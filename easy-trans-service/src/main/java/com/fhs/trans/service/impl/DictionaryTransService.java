@@ -170,10 +170,11 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
                 }
             }
             String transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
-            if (obj.getTransMap() != null) {
+
+            if (obj.getTransMap() != null && !setRef(tempTrans, obj, transResult)) {
                 obj.getTransMap().put(tempField.getName() + "Name", transResult);
             }
-            setRef(tempTrans, obj, transResult);
+
         }
     }
 

@@ -76,7 +76,7 @@ public class TransService {
         List<Field> transFieldList = null;
         for (String type : transTypeServiceMap.keySet()) {
             if (!transTypes.contains(type)) {
-                return;
+                continue;
             }
             transFieldList = info.getTransField(type);
             if (transFieldList == null || transFieldList.size() == 0) {
