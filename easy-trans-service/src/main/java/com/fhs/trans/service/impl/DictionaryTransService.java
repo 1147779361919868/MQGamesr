@@ -118,6 +118,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
         Map<String,String> dicMap = new HashMap<>();
         dicMap.put(dictCode,dictTransResult);
         refreshCache(dictGroupCode, dicMap);
+        //因为是根据前缀删除，所以这里dictGroupCode+ '_' + dictCode 就只会删除单个了
         noticeOtherService(dictGroupCode+ '_' + dictCode);
     }
 
