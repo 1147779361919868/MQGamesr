@@ -1,228 +1,265 @@
 package com.fhs.cache.service;
 
+import com.fhs.common.constant.Constant;
+import lombok.Data;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.util.CollectionUtils;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * reidis 缓存服务
+ * redis 缓存 服务类
  *
  * @author wanglei
- * @version [版本号, 2015年8月4日]
+ * @version [版本号, 2015年8月5日]
  * @see [相关类/方法]
  * @since [产品/模块版本]
  */
-public interface RedisCacheService<E> {
+@Data
+public class RedisCacheService<E>  {
     /**
-     * 为缓存添加一个obejct
-     *
-     * @param key 一个主键，如sys:user:admin
-     * @param obj 主键对应的数据
+     * redisTemplate
      */
-    void put(String key, E obj);
+    private RedisTemplate<String, E> redisTemplate;
 
-    /**
-     * 根据key获取object
-     *
-     * @param key
-     * @return key对应的对象
-     */
-    E get(String key);
+    private RedisTemplate<String, String> strRedisTemplate;
 
-    /**
-     * 删除一个key
-     *
-     * @param key key
-     * @return 影响的结果数
-     */
-    Long remove(String key);
+    private Lock lock = new ReentrantLock();// 基于底层IO阻塞考虑
 
-    /**
-     * 删除一个key
-     *
-     * @param key key
-     * @return 影响的结果数
-     */
-    Long removeStr(String key);
+    
+    public void put(String key, E obj) {
+        ValueOperations<String, E> valueOper = redisTemplate.opsForValue();
+        valueOper.set(key, obj);
+    }
 
+    
+    public E get(String key) {
+        ValueOperations<String, E> valueOper = redisTemplate.opsForValue();
+        return valueOper.get(key);
+    }
 
-    /**
-     * 检查key是否已经存在
-     *
-     * @param key
-     * @return
-     */
-    boolean exists(String key);
+    
+    public List<E> getList(String key) {
+        ListOperations<String, E> valueOper = redisTemplate.opsForList();
+        return valueOper.range(key, 0, -1);
+    }
 
+    
+    public Long remove(final String key) {
+        if (!exists(key)) {
+            return 0l;
+        }
+        return redisTemplate.execute(new RedisCallback<Long>() {
+            
+            public Long doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                long result = 0;
+                result = connection.del(key.getBytes());
+                return result;
+            }
+        });
+    }
 
-    /**
-     * 检查key是否已经存在
-     *
-     * @param key
-     * @return
-     */
-    boolean existsStr(String key);
+    
+    public Long removeStr(final String key) {
+        if (!existsStr(key)) {
+            return 0l;
+        }
+        return strRedisTemplate.execute(new RedisCallback<Long>() {
+            
+            public Long doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                long result = 0;
+                result = connection.del(key.getBytes());
+                return result;
+            }
+        });
+    }
 
-    /**
-     * 添加数组到缓存中
-     *
-     * @param key  key
-     * @param objs 数组
-     */
-    void addSet(String key, E[] objs);
+    
+    public boolean exists(final String key) {
+        return redisTemplate.execute(new RedisCallback<Boolean>() {
+            public Boolean doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                return connection.exists(key.getBytes());
+            }
+        });
+    }
 
-    /**
-     * 添加一个set到数组中
-     *
-     * @param key    key
-     * @param objSet objset
-     */
-    void addSet(String key, Set<E> objSet);
+    
+    public boolean existsStr(String key) {
+        return strRedisTemplate.execute(new RedisCallback<Boolean>() {
+            public Boolean doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                return connection.exists(key.getBytes());
+            }
+        });
+    }
 
-    /**
-     * 添加value 到set中
-     *
-     * @param key
-     * @param value
-     */
-    void addSet(String key, E value);
+    
+    public void addSet(String key, E[] objs) {
+        SetOperations<String, E> set = redisTemplate.opsForSet();
+        for (E obj : objs) {
+            set.add(key, obj);
+        }
+    }
 
-    /**
-     * 添加一个list到集合中
-     *
-     * @param key  key
-     * @param list 需要添加的集合数据
-     */
-    void addList(String key, List<E> list);
+    @SuppressWarnings("unchecked")
+    
+    public void addSet(String key, Set<E> list) {
+        this.addSet(key, (E[]) list.toArray());
+    }
 
-    /**
-     * 判断set中有无value 有true
-     *
-     * @param key
-     * @param value
-     * @return
-     */
-    boolean contains(String key, Object value);
+    
+    public void addSet(String key, E value) {
+        redisTemplate.opsForSet().add(key, value);
+    }
 
-    /**
-     * 删除set集合中指定的value
-     *
-     * @param key
-     * @param value
-     */
-    void removeSetValue(String key, Object value);
+    @SuppressWarnings("unchecked")
+    
+    public void addList(String key, List<E> objList) {
+        ListOperations<String, E> list = redisTemplate.opsForList();
+        for (E obj : objList) {
+            list.leftPush(key, obj);
+        }
+    }
 
-    /**
-     * 获取一个set
-     *
-     * @param key key
-     * @return key对应的set
-     */
-    Set<E> getSet(String key);
+    
+    public boolean contains(String key, Object value) {
+        return redisTemplate.opsForSet().isMember(key, value);
+    }
 
-    /**
-     * 放入set可以直接取出list
-     *
-     * @param key key
-     * @return 对应的set转为的list
-     */
-    List<E> getList(String key);
+    
+    public void removeSetValue(String key, Object value) {
+        redisTemplate.opsForSet().remove(key, value);
+    }
 
-    /**
-     * 添加一个字符串
-     *
-     * @param key   key
-     * @param value value
-     */
-    boolean addStr(String key, String value);
+    
+    public boolean addStr(final String key, final String value) {
+        if (this.existsStr(key)) {
+            this.updateStr(key, value);
+        }
+        boolean result = strRedisTemplate.execute(new RedisCallback<Boolean>() {
+            public Boolean doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                RedisSerializer<String> serializer = getRedisSerializer();
+                byte[] keys = serializer.serialize(key);
+                byte[] values = serializer.serialize(value);
+                return connection.setNX(keys, values);
+            }
+        });
+        return result;
+    }
 
-    /**
-     * 修改字符串
-     *
-     * @param key   键
-     * @param value 值
-     * @return 是否更新成功
-     */
-    boolean updateStr(String key, String value);
+    
+    public boolean updateStr(final String key, final String value) {
+        if (!this.exists(key)) {
+            return this.addStr(key, value);
+        }
+        return strRedisTemplate.execute(new RedisCallback<Boolean>() {
+            public Boolean doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                RedisSerializer<String> serializer = getRedisSerializer();
+                byte[] keys = serializer.serialize(key);
+                byte[] values = serializer.serialize(value);
+                connection.set(keys, values);
+                return true;
+            }
+        });
+    }
 
-    /**
-     * 根据key获取一个字符串
-     *
-     * @param key key
-     * @return key对应的字符串
-     */
-    String getStr(String key);
-
-    /**
-     * 模糊删除一个key
-     *
-     * @param key key
-     * @return 影响的结果数
-     */
-    Long removeFuzzy(String key);
-
-    /**
-     * 设置一个key在 timeout 秒后超时
-     *
-     * @param key     key
-     * @param timeout 超时时间  秒
-     */
-    boolean expire(String key, int timeout);
-
-
-    /**
-     * 设置一个key在 timeout 秒后超时
-     *
-     * @param key     key
-     * @param timeout 超时时间  秒
-     */
-    boolean expireStr(String key, int timeout);
-
-    /**
-     * 从队列头插入值
-     *
-     * @param key
-     * @param value
-     */
-    void leftPush(String key, E value);
+    
+    public String getStr(final String key) {
+        String result = strRedisTemplate.execute(new RedisCallback<String>() {
+            public String doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                RedisSerializer<String> serializer = getRedisSerializer();
+                byte[] keys = serializer.serialize(key);
+                byte[] values = connection.get(keys);
+                if (values == null) {
+                    return null;
+                }
+                String value = serializer.deserialize(values);
+                return value;
+            }
+        });
+        return result == null ? "" : result;
+    }
 
     /**
-     * 从队列尾部插入值
+     * 获取 RedisSerializer
      *
-     * @param key
-     * @param value
+     * @return RedisSerializer
      */
-    void rightPush(String key, E value);
+    private RedisSerializer<String> getRedisSerializer() {
+        return strRedisTemplate.getStringSerializer();
+    }
 
-    /**
-     * 从头开始取值
-     *
-     * @param key
-     * @return
-     */
-    E getBLPop(String key);
+    
+    public Long removeFuzzy(final String key) {
+        return redisTemplate.execute(new RedisCallback<Long>() {
+            
+            public Long doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                long result = 0;
+                Set<byte[]> keys = connection.keys(key.getBytes());
+                for (byte[] keySet : keys) {
+                    result += connection.del(keySet);
+                }
+                return result;
+            }
+        });
+    }
 
-    /**
-     * 从后开始取值
-     *
-     * @param key
-     * @return
-     */
-    E getBRPop(String key);
+    
+    public Set<E> getSet(String key) {
+        return redisTemplate.opsForSet().members(key);
+    }
 
-    /**
-     * 获取list总数
-     *
-     * @param key
-     * @return
-     */
-    Long getForListSize(String key);
+    
+    public boolean expire(final String key, final int timeout) {
+        return redisTemplate.execute(new RedisCallback<Long>() {
+            
+            public Long doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                if (connection.expire(key.getBytes(), timeout)) {
+                    return (long) Constant.SUCCESS_CODE;
+                }
+                ;
+                return (long) Constant.DEFEAT_CODE;
+            }
+        }) == Constant.SUCCESS_CODE;
+    }
+
+    
+    public boolean expireStr(final String key, final int timeout) {
+        return strRedisTemplate.execute(new RedisCallback<Long>() {
+            
+            public Long doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                if (connection.expire(key.getBytes(), timeout)) {
+                    return (long) Constant.SUCCESS_CODE;
+                }
+                ;
+                return (long) Constant.DEFEAT_CODE;
+            }
+        }) == Constant.SUCCESS_CODE;
+    }
 
     /**
      * 递增值
      *
      * @param key
      */
-    public long incrAdd(String key);
+    public long incrAdd(String key) {
+        return redisTemplate.boundValueOps(key).increment(1);
+    }
 
     /**
      * 增加固定值
@@ -230,27 +267,94 @@ public interface RedisCacheService<E> {
      * @param key
      * @param value
      */
-    public long incrAdd(String key, int value);
+    public long incrAdd(String key, int value) {
+        return redisTemplate.boundValueOps(key).increment(value);
+    }
 
     /**
      * 递减值
      *
      * @param key
      */
-    public long incrSub(String key);
+    public long incrSub(String key) {
+        return redisTemplate.boundValueOps(key).increment(-1);
+    }
 
-    /**
-     * 给redis 的channel 发送 message
-     *
-     * @param channel
-     * @param message
-     */
-    void convertAndSend(String channel, String message);
+    
+    public void convertAndSend(String channel, String message) {
+        redisTemplate.convertAndSend(channel, message);
+    }
 
-    /**
-     * 模糊匹配key
-     *
-     * @Param: [key]
-     */
-    Set<String> getFuzzy(String key);
+    
+    public Long getForListSize(String key) {
+        return redisTemplate.opsForList().size(key);
+    }
+
+    
+    public void leftPush(String key, E value) {
+        redisTemplate.opsForList().leftPush(key, value);
+    }
+
+    
+    public void rightPush(String key, E value) {
+        redisTemplate.opsForList().rightPush(key, value);
+    }
+
+    
+    public E getBLPop(final String key) {
+        return (E) redisTemplate.execute(new RedisCallback<E>() {
+            public E doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                try {
+                    lock.lockInterruptibly();
+
+                    List<byte[]> results = connection.bLPop(0, key.getBytes());
+                    if (CollectionUtils.isEmpty(results)) {
+                        return null;
+                    }
+                    return (E) getRedisSerializer().deserialize(results.get(1));
+                } catch (InterruptedException e) {
+                } finally {
+                    lock.unlock();
+                }
+                return null;
+            }
+        });
+    }
+
+    
+    public E getBRPop(final String key) {
+        return (E) redisTemplate.execute(new RedisCallback<E>() {
+            public E doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                try {
+                    lock.lockInterruptibly();
+                    List<byte[]> results = connection.bRPop(0, key.getBytes());
+                    if (CollectionUtils.isEmpty(results)) {
+                        return null;
+                    }
+                    RedisSerializer<?> redisSerializer = redisTemplate.getValueSerializer();
+                    return (E) redisSerializer.deserialize(results.get(1));
+                } catch (InterruptedException e) {
+                } finally {
+                    lock.unlock();
+                }
+                return null;
+            }
+        });
+    }
+
+    
+    public Set<String> getFuzzy(String matchKey) {
+        Set<String> keys = redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+            Set<String> keysTmp = new HashSet<>();
+            Cursor<byte[]> cursor = connection.scan(new ScanOptions.ScanOptionsBuilder().match("*" + matchKey + "*").count(1000).build());
+            while (cursor.hasNext()) {
+                keysTmp.add(new String(cursor.next()));
+            }
+            return keysTmp;
+        });
+        return keys;
+    }
+
 }

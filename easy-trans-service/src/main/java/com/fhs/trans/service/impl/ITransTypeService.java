@@ -68,6 +68,19 @@ public interface ITransTypeService {
     }
 
     /**
+     * 清理掉缓存
+     * @param pkey  主键
+     * @param namespace 命名空间
+     * @param transType 翻译类型
+     */
+    default void clearGlobalCache(Object pkey, String namespace, String transType){
+        if (GLOBAL_TRANS_CACHE.containsKey(transType + namespace)) {
+            Cache<Object, Map<String, Object>> namespaceCache = GLOBAL_TRANS_CACHE.get(transType + namespace);
+            namespaceCache.invalidate(ConverterUtils.toString(pkey));
+        }
+    }
+
+    /**
      * 从现有缓存获取一个缓存
      *
      * @param pkey      主键

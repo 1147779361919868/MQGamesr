@@ -1,24 +1,26 @@
 package com.fhs.trans.service.impl;
 
-import com.fhs.cache.service.FuncGetter;
+import com.fhs.cache.service.BothCacheService;
 import com.fhs.cache.service.RedisCacheService;
 import com.fhs.common.constant.Constant;
-import com.fhs.common.spring.SpringContextUtil;
+import com.fhs.common.utils.JsonUtils;
 import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
-import com.fhs.exception.ParamException;
 import com.fhs.trans.fi.LocaleGetter;
+import com.fhs.trans.listener.TransMessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,18 +35,13 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DictionaryTransService.class);
 
-    /**
-     * redis key前缀
-     */
-    private static final String TRANS_PRE = "trans:";
+
+    @Autowired
+    private BothCacheService<String> bothCacheService;
 
     @Autowired(required = false)
     private RedisCacheService<String> redisCacheService;
 
-    /**
-     * 用来放字典缓存的map
-     */
-    private Map<String, String> dictionaryTransMap = new ConcurrentHashMap<>();
 
     /**
      * 反向翻译
@@ -80,17 +77,50 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             throw new RuntimeException("使用redis 请将 easy-trans.is-enable-redis 设置为true");
         }
         dicMap.keySet().forEach(dictCode -> {
-            if (!isUseRedis) {
-                dictionaryTransMap.put(dictGroupCode + "_" + dictCode, dicMap.get(dictCode));
-            } else {
-                redisCacheService.put(TRANS_PRE + dictGroupCode + "_" + dictCode, dicMap.get(dictCode));
-            }
+            bothCacheService.put(dictGroupCode + "_" + dictCode, dicMap.get(dictCode), false);
             unTransMap.put(dictGroupCode + "_" + dicMap.get(dictCode), dictCode);
         });
     }
 
+
+    /**
+     * 刷新缓存并通知其他的微服务清理缓存
+     *
+     * @param dictGroupCode 字典分组编码
+     * @param dicMap        字典map
+     */
+    public void refreshCacheAndNoticeOtherService(String dictGroupCode, Map<String, String> dicMap) {
+        //删除完了之后重新插入
+        bothCacheService.remove(dictGroupCode, false);
+        refreshCache(dictGroupCode, dicMap);
+        noticeOtherService(dictGroupCode);
+    }
+
+    /**
+     * 通知其他的微服务刷新缓存
+     * @param dictGroupCode  字典分组编码
+     */
+    public void noticeOtherService(String dictGroupCode) {
+        Map<String, String> body = new HashMap<>();
+        body.put("transType", TransType.DICTIONARY);
+        body.put("dictGroupCode", dictGroupCode);
+        redisCacheService.convertAndSend("trans", JsonUtils.map2json(body));
+    }
+
+    /**
+     * 清理本地缓存
+     *
+     * @param messageMap
+     */
+    public void clearCache(Map<String, Object> messageMap) {
+        String dictGroupCode = StringUtil.toString(messageMap.get("dictGroupCode"));
+        if (!StringUtils.isEmpty(dictGroupCode)) {
+            bothCacheService.remove(dictGroupCode, true);
+        }
+    }
+
     public Map<String, String> getDictionaryTransMap() {
-        return dictionaryTransMap;
+        return bothCacheService.getLocalCacheMap();
     }
 
     @Override
@@ -101,8 +131,8 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             tempField.setAccessible(true);
             tempTrans = tempField.getAnnotation(Trans.class);
             String dicCodes = StringUtil.toString(ReflectUtils.getValue(obj, tempField.getName()));
-            if(dicCodes.contains(",")){
-                dicCodes = dicCodes.replace("[","").replace("]","").replace(" ","");
+            if (dicCodes.contains(",")) {
+                dicCodes = dicCodes.replace("[", "").replace("]", "").replace(" ", "");
             }
             String[] dicCodeArray = dicCodes.split(",");
             String key = tempTrans.key().contains("KEY_") ? StringUtil.toString(ReflectUtils.getValue(obj, tempTrans.key().replace("KEY_", ""))) : tempTrans.key();
@@ -110,11 +140,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             List<String> dicCodeList = new ArrayList<>();
             for (String dicCode : dicCodeArray) {
                 if (!StringUtil.isEmpty(dicCode)) {
-                    if (!isUseRedis) {
-                        dicCodeList.add(dictionaryTransMap.get(getMapKey(key, dicCode)));
-                    } else {
-                        dicCodeList.add(redisCacheService.get(TRANS_PRE + getMapKey(key, dicCode)));
-                    }
+                    dicCodeList.add(bothCacheService.get(getMapKey(key, dicCode)));
                 }
             }
             String transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
@@ -152,6 +178,8 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
     public void afterPropertiesSet() throws Exception {
         //注册自己为一个服务
         TransService.registerTransType(TransType.DICTIONARY, this);
+        //注册刷新缓存服务
+        TransMessageListener.regTransRefresher(TransType.DICTIONARY, this::clearCache);
     }
 
     /**
@@ -169,6 +197,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
      */
     public void makeUseRedis() {
         this.isUseRedis = true;
+        this.bothCacheService.setUseRedis(true);
         if (redisCacheService == null) {
             throw new RuntimeException("使用redis 请将 easy-trans.is-enable-redis 设置为true");
         }

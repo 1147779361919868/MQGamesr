@@ -34,4 +34,23 @@ public @interface TransDefaultSett {
      * @return
      */
     String dataSource() default "";
+
+    /**
+     * 是否按照访问时间
+     * @return
+     */
+    boolean isAccess() default false;
+
+    /**
+     * 缓存时间
+     * @return 多少秒
+     */
+    long cacheSeconds() default 5;
+    /**
+     * 最大缓存数量
+     * @return 最大缓存数量
+     */
+    int maxCache () default  1000;
+
+    boolean isUseCache() default false;
 }

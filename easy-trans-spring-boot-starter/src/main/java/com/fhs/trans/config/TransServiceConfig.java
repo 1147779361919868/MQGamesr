@@ -1,7 +1,8 @@
 package com.fhs.trans.config;
 
+import com.fhs.cache.service.BothCacheService;
 import com.fhs.cache.service.RedisCacheService;
-import com.fhs.cache.service.impl.RedisCacheServiceImpl;
+import com.fhs.cache.service.TransCacheManager;
 import com.fhs.common.constant.TransConfig;
 import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.trans.advice.EasyTransResponseBodyAdvice;
@@ -125,7 +126,15 @@ public class TransServiceConfig implements InitializingBean {
         return builder.build();
     }
 
+    @Bean
+    public TransCacheManager transCacheManager(){
+        return new TransCacheManager();
+    }
 
+    @Bean
+    public BothCacheService bothCacheService(){
+        return new BothCacheService();
+    }
 
 
     /**
@@ -216,7 +225,7 @@ public class TransServiceConfig implements InitializingBean {
     @Bean
     @ConditionalOnProperty(name = "easy-trans.is-enable-redis", havingValue = "true")
     public RedisCacheService redisCacheService(RedisTemplate redisTemplate, AutoTransService autoTransService) {
-        RedisCacheServiceImpl redisCacheService = new RedisCacheServiceImpl();
+        RedisCacheService redisCacheService = new RedisCacheService();
         redisCacheService.setRedisTemplate(redisTemplate);
         redisCacheService.setStrRedisTemplate(redisTemplate);
         autoTransService.setRedisTransCache(redisCacheService);

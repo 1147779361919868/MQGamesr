@@ -6,6 +6,7 @@ import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
+import com.fhs.trans.listener.TransMessageListener;
 import com.fhs.trans.vo.BasicVO;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -123,6 +124,8 @@ public class RpcTransService extends SimpleTransService {
     @Override
     public void afterPropertiesSet() throws Exception {
         TransService.registerTransType(TransType.RPC, this);
+        //注册刷新缓存服务
+        TransMessageListener.regTransRefresher(TransType.RPC, this::onMessage);
     }
 
 }

@@ -9,6 +9,7 @@ import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.ds.DataSourceSetter;
+import com.fhs.trans.listener.TransMessageListener;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -252,6 +253,17 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @return
      */
     protected String getTargetClassName(Trans tempTrans) {
+        if (tempTrans.target() != com.fhs.core.trans.vo.TransPojo.class && !transCacheSettMap.containsKey(tempTrans.target())
+                && tempTrans.target().isAnnotationPresent(TransDefaultSett.class)) {
+            TransDefaultSett transDefaultSett = tempTrans.target().getAnnotation(TransDefaultSett.class);
+            if(transDefaultSett.isUseCache()){
+                TransCacheSett cacheSett = new TransCacheSett();
+                cacheSett.setMaxCache(transDefaultSett.maxCache());
+                cacheSett.setCacheSeconds(transDefaultSett.cacheSeconds());
+                cacheSett.setAccess(transDefaultSett.isAccess());
+                transCacheSettMap.put(tempTrans.target().getName(),cacheSett);
+            }
+        }
         return (tempTrans.target() == com.fhs.core.trans.vo.TransPojo.class
                 ? tempTrans.targetClassName() : tempTrans.target().getName());
     }
@@ -275,7 +287,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         }
         tempCacheTransMap.put("targetObject", po);
         String className = getTargetClassName(trans);
-        if (transCacheSettMap.containsKey(className)) {
+        if (transCacheSettMap.get(className) != null) {
             TransCacheSett cacheSett = transCacheSettMap.get(className);
             put2GlobalCache(tempCacheTransMap, cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
                     className, TransType.SIMPLE);
@@ -283,10 +295,30 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         return tempCacheTransMap;
     }
 
+    /**
+     * 清理本地缓存
+     *
+     * @param messageMap
+     */
+    public void onMessage(Map<String, Object> messageMap) {
+        String  messageType = ConverterUtils.toString(messageMap.get("messageType"));
+        switch (messageType){
+            case "clear":
+                clearGlobalCache(ConverterUtils.toString(messageMap.get("pkey")),
+                        ConverterUtils.toString(messageMap.get("target")),
+                        ConverterUtils.toString(messageMap.get("transType")));
+                break;
+        }
+
+
+    }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
         TransService.registerTransType(TransType.SIMPLE, this);
+        //注册刷新缓存服务
+        TransMessageListener.regTransRefresher(TransType.SIMPLE, this::onMessage);
     }
 
     /**
