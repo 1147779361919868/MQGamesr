@@ -103,8 +103,6 @@ public class TransServiceConfig implements InitializingBean {
      */
     @Bean
     public DictionaryTransService dictionaryTransService() {
-        AutoTransService autoTransService = new AutoTransService();
-        autoTransService.setPackageNames(packageNames);
         return new DictionaryTransService();
     }
 

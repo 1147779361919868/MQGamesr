@@ -101,6 +101,9 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             tempField.setAccessible(true);
             tempTrans = tempField.getAnnotation(Trans.class);
             String dicCodes = StringUtil.toString(ReflectUtils.getValue(obj, tempField.getName()));
+            if(dicCodes.contains(",")){
+                dicCodes = dicCodes.replace("[","").replace("]","").replace(" ","");
+            }
             String[] dicCodeArray = dicCodes.split(",");
             String key = tempTrans.key().contains("KEY_") ? StringUtil.toString(ReflectUtils.getValue(obj, tempTrans.key().replace("KEY_", ""))) : tempTrans.key();
             //sex_0/1  男 女
