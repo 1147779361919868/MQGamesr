@@ -5,6 +5,11 @@
 
 ![输入图片说明](images/jieshao_temp.jpg)
 
+
+# 插件文档
+
+http://easy-trans.fhs-opensource.top/ 
+
 ## easy trans适用于5种场景   
 
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想自己手动做表关联查询   
@@ -164,9 +169,7 @@ public class Student implements TransPojo {
 
 https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 
-# 插件文档
 
-https://www.kancloud.cn/shuaizai88/easy-trans/3100800    
 
 # 已经使用此插件的企业
 1、陕西小伙伴网络科技有限公司   
