@@ -126,21 +126,28 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     @Override
     public void transMore(List<? extends VO> objList, List<Field> toTransList) {
         threadLocalCache.set(new HashMap<>());
-        // 根据namespace区分
+        // 根据namespace区分本vo有哪些字段
         Map<String, List<Field>> namespaceFieldsGroupMap = new HashMap<>();
+        // 根据namespace区分对方po有哪些字段需要从db查询出来
+        Map<String, Set<String>> namespaceTargetFieldsGroupMap = new HashMap<>();
         for (Field tempField : toTransList) {
             tempField.setAccessible(true);
             Trans tempTrans = tempField.getAnnotation(Trans.class);
             String targetClassName = getTargetClassName(tempTrans);
             List<Field> fields = namespaceFieldsGroupMap.containsKey(targetClassName) ? namespaceFieldsGroupMap.get(targetClassName) : new ArrayList<>();
+            Set<String> targetFields = namespaceTargetFieldsGroupMap.containsKey(targetClassName) ? namespaceTargetFieldsGroupMap.get(targetClassName) : new HashSet<>();
+            targetFields.addAll(Arrays.asList(tempTrans.fields()));
             fields.add(tempField);
             namespaceFieldsGroupMap.put(targetClassName, fields);
+            namespaceTargetFieldsGroupMap.put(targetClassName, targetFields);
         }
         // 合并相同的一次in过来
         for (String target : namespaceFieldsGroupMap.keySet()) {
             final List<Field> fields = namespaceFieldsGroupMap.get(target);
             Trans tempTrans = new SimpleTrans(fields.get(0).getAnnotation(Trans.class));
             final Set<Object> ids = new HashSet<>();
+            Set<String> targetFields = namespaceTargetFieldsGroupMap.get(target);
+            targetFields.addAll(this.getTargetDefaultFields(tempTrans));
             objList.forEach(obj -> {
                 for (Field field : fields) {
                     try {
@@ -164,13 +171,15 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             });
             if (!ids.isEmpty()) {
                 if (transCacheSettMap.containsKey(getTargetClassName(tempTrans))) {
+                    //如果使用缓存了那么就不指定字段了，避免部分vo翻译不全
+                    targetFields = null;
                     Set<Object> newIds = initLocalFromGlobalCache(threadLocalCache, ids, getTargetClassName(tempTrans), this.getClass() == SimpleTransService.class ?
                             TransType.SIMPLE : TransType.RPC);
                     ids.clear();
                     ids.addAll(newIds);
                 }
                 if (!ids.isEmpty()) {
-                    List<? extends VO> dbDatas = findByIds(new ArrayList<Object>(ids), tempTrans);
+                    List<? extends VO> dbDatas = findByIds(new ArrayList<Object>(ids), tempTrans, targetFields);
                     for (VO vo : dbDatas) {
                         threadLocalCache.get().put(getTargetClassName(tempTrans) + "_" + getUniqueKey(vo, tempTrans),
                                 createTempTransCacheMap(vo, tempTrans));
@@ -182,6 +191,21 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             this.transOne(obj, toTransList);
         });
         threadLocalCache.set(null);
+    }
+
+    /**
+     * 获取默认字段
+     *
+     * @param tempTrans 翻译配置
+     * @return
+     */
+    private List<String> getTargetDefaultFields(Trans tempTrans) {
+        if (tempTrans.target() != com.fhs.core.trans.vo.TransPojo.class && !transCacheSettMap.containsKey(tempTrans.target())
+                && tempTrans.target().isAnnotationPresent(TransDefaultSett.class)) {
+            TransDefaultSett transDefaultSett = tempTrans.target().getAnnotation(TransDefaultSett.class);
+            return Arrays.asList(transDefaultSett.defaultFields());
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -201,15 +225,15 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     /**
      * 根据id 集合 获取数据
      *
-     * @param ids
-     * @param tempTrans
+     * @param ids          主键
+     * @param tempTrans    翻译配置
+     * @param targetFields 需要查询的字段
      * @return
      */
-    public List<? extends VO> findByIds(List ids, Trans tempTrans) {
+    public List<? extends VO> findByIds(List ids, Trans tempTrans, Set<String> targetFields) {
         return findByIds(() -> {
             return transDiver.findByIds(ids, tempTrans.target(), tempTrans.uniqueField());
         }, tempTrans.dataSource());
-
     }
 
     /**
@@ -221,7 +245,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      */
     public VO findById(Object id, Trans tempTrans) {
         return findById(() -> {
-            return transDiver.findById((Serializable) id, tempTrans.target(), tempTrans.uniqueField());
+            return transDiver.findById((Serializable) id, tempTrans.target(), tempTrans.uniqueField(),new HashSet<>(Arrays.asList(tempTrans.fields())));
         }, tempTrans.dataSource());
     }
 
@@ -352,6 +376,19 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         List<? extends VO> findByIds(List<? extends Serializable> ids, Class<? extends VO> targetClass, String uniqueField);
 
         /**
+         * 根据ids获取集合
+         *
+         * @param ids          ids
+         * @param targetClass  目标类类名
+         * @param uniqueField  唯一键字段
+         * @param targetFields 目标字段
+         * @return
+         */
+        default List<? extends VO> findByIds(List<? extends Serializable> ids, Class<? extends VO> targetClass, String uniqueField, Set<String> targetFields) {
+            return findByIds(ids, targetClass, uniqueField);
+        }
+
+        /**
          * 根据id查询对象
          *
          * @param id          id
@@ -360,6 +397,19 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
          * @return
          */
         VO findById(Serializable id, Class<? extends VO> targetClass, String uniqueField);
+
+        /**
+         * 根据id查询对象
+         *
+         * @param id          id
+         * @param targetClass 目标类类名
+         * @param uniqueField 唯一键字段
+         * @param targetFields 目标表的字段
+         * @return
+         */
+        default VO findById(Serializable id, Class<? extends VO> targetClass, String uniqueField, Set<String> targetFields) {
+            return findById(id, targetClass, uniqueField);
+        }
     }
 
 
@@ -487,6 +537,11 @@ class SimpleTrans implements Trans {
     @Override
     public String uniqueField() {
         return (anno.uniqueField().length() != 0 || "".equals(uniqueField)) ? anno.uniqueField() : uniqueField;
+    }
+
+    @Override
+    public int sort() {
+        return anno.sort();
     }
 
     @Override

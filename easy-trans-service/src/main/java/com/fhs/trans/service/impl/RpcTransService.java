@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 远程翻译服务
@@ -35,25 +36,26 @@ public class RpcTransService extends SimpleTransService {
     /**
      * 用来全局配置其他微服务的ContextPath
      */
-    private Map<String,String> serviceContextPathConfigMap = new HashMap<>();
+    private Map<String, String> serviceContextPathConfigMap = new HashMap<>();
 
     /**
      * 添加ContextPath 配置
+     *
      * @param serviceName 服务名称
      * @param contextPath 服务路径
      */
-    public void addContextPath(String serviceName,String contextPath){
-        this.serviceContextPathConfigMap.put(serviceName,contextPath);
+    public void addContextPath(String serviceName, String contextPath) {
+        this.serviceContextPathConfigMap.put(serviceName, contextPath);
     }
 
     @Override
-    public List<? extends VO> findByIds(List ids, Trans tempTrans) {
+    public List<? extends VO> findByIds(List ids, Trans tempTrans, Set<String> targetFields) {
         //如果没开启springcloud 则走SimpleTransService逻辑
         if (!isEnableCloud) {
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
                 return findByIds(() -> {
-                    return transDiver.findByIds(ids, clazz, tempTrans.uniqueField());
+                    return transDiver.findByIds(ids, clazz, tempTrans.uniqueField(), targetFields);
                 }, tempTrans.dataSource());
 
             } catch (ClassNotFoundException e) {
@@ -63,6 +65,9 @@ public class RpcTransService extends SimpleTransService {
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("ids", ids);
         paramMap.put("uniqueField", tempTrans.uniqueField());
+        if (targetFields != null) {
+            paramMap.put("targetFields", targetFields);
+        }
         //执行远程调用
         try {
             String respJson = restTemplate.postForObject("http://" + tempTrans.serviceName()
@@ -81,7 +86,7 @@ public class RpcTransService extends SimpleTransService {
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
                 return findById(() -> {
-                    return transDiver.findById((Serializable) id, clazz, tempTrans.uniqueField());
+                    return transDiver.findById((Serializable) id, clazz, tempTrans.uniqueField(), new HashSet<>(Arrays.asList(tempTrans.fields())));
                 }, tempTrans.dataSource());
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName());
@@ -92,7 +97,7 @@ public class RpcTransService extends SimpleTransService {
             return restTemplate.getForObject("http://" + tempTrans.serviceName()
                     + getContextPath(tempTrans)
                     + "/easyTrans/proxy/" + tempTrans.targetClassName()
-                    + "/findById/" + id + "?uniqueField=" + tempTrans.uniqueField(), BasicVO.class);
+                    + "/findById/" + id + "?uniqueField=" + tempTrans.uniqueField() + "&targetFields=" + Arrays.stream(tempTrans.fields()).collect(Collectors.joining(",")), BasicVO.class);
         } catch (Exception e) {
             log.error("trans service执行RPC Trans 远程调用错误:" + tempTrans.serviceName(), e);
         }
@@ -101,14 +106,15 @@ public class RpcTransService extends SimpleTransService {
 
     /**
      * 获取微服务的contextpath
-     * @param tempTrans  trans配置
+     *
+     * @param tempTrans trans配置
      * @return contextpath
      */
-    private String getContextPath(Trans tempTrans){
-        if(serviceContextPathConfigMap.containsKey(tempTrans.serviceName())){
+    private String getContextPath(Trans tempTrans) {
+        if (serviceContextPathConfigMap.containsKey(tempTrans.serviceName())) {
             return serviceContextPathConfigMap.get(tempTrans.serviceName());
         }
-        return  StringUtil.isEmpty(tempTrans.serviceContextPath()) ? "" : tempTrans.serviceContextPath();
+        return StringUtil.isEmpty(tempTrans.serviceContextPath()) ? "" : tempTrans.serviceContextPath();
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.fhs.trans.controller;
 
 import com.fhs.common.utils.ConverterUtils;
+import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.SimpleTransService;
@@ -12,7 +13,10 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +51,11 @@ public class TransProxyController {
                 return id != null && !id.isEmpty();
             }).map(Long::valueOf).collect(Collectors.toList());
         }
-        return simpleTransDiver.findByIds(ids, (Class<? extends VO>) Class.forName(targetClass),payload.getUniqueField()).stream().map(vo -> {
+        Set<String> targetFields = null;
+        if(payload.getTargetFields()!=null && payload.getTargetFields().length!=0){
+            targetFields = new HashSet<>(Arrays.asList(payload.getTargetFields()));
+        }
+        return simpleTransDiver.findByIds(ids, (Class<? extends VO>) Class.forName(targetClass),payload.getUniqueField(),targetFields).stream().map(vo -> {
             try {
                 return vo2BasicVO(vo);
             } catch (IllegalAccessException e) {
@@ -90,7 +98,7 @@ public class TransProxyController {
      * @param targetClass 目标类
      */
     @GetMapping("/{targetClass}/findById/{id}")
-    public Object findById(@PathVariable("targetClass") String targetClass, @PathVariable("id") String id, @RequestParam("uniqueField")String uniqueField) throws ClassNotFoundException, IllegalAccessException {
+    public Object findById(@PathVariable("targetClass") String targetClass, @PathVariable("id") String id, @RequestParam("uniqueField")String uniqueField, @RequestParam("targetFields")String targetFields) throws ClassNotFoundException, IllegalAccessException {
         Assert.notNull(targetClass, "targetClass 不可为空");
         Assert.notNull(targetClass, "id 不可为空");
         Serializable sid = id;
@@ -101,7 +109,11 @@ public class TransProxyController {
         } else if (fieldType == long.class || fieldType == Long.class) {
             sid = Long.valueOf(id);
         }
-        VO vo = simpleTransDiver.findById(sid, (Class<? extends VO>) Class.forName(targetClass),uniqueField);
+        Set<String> targetFieldSet = null;
+        if(!StringUtil.isEmpty(targetFields) && !"null".equals(targetFields)){
+            targetFieldSet = new HashSet<>(Arrays.asList(targetFields.split(",")));
+        }
+        VO vo = simpleTransDiver.findById(sid, (Class<? extends VO>) Class.forName(targetClass),uniqueField,targetFieldSet);
         if (vo == null) {
             return null;
         }

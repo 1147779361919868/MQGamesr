@@ -9,6 +9,10 @@ import java.util.List;
  */
 @Data
 public class FindByIdsQueryPayload {
+
     private List<String> ids;
+
     private String uniqueField;
+
+    private String[] targetFields;
 }

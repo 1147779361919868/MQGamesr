@@ -105,4 +105,11 @@ public @interface Trans {
      * @return
      */
     String uniqueField() default "";
+
+    /**
+     *  排序字段
+     * 部分的时候表里的code，身份证号码，手机号等也是唯一键
+     * @return
+     */
+    int sort() default 0;
 }

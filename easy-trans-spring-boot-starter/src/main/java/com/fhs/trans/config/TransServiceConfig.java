@@ -94,7 +94,7 @@ public class TransServiceConfig implements InitializingBean {
      * @return
      */
     @Bean
-    public DictionaryTransService dictionaryTransService() {
+    public DictionaryTransService dictionaryTransService(SimpleTransService simpleTransService) {
         return new DictionaryTransService();
     }
 
@@ -122,8 +122,8 @@ public class TransServiceConfig implements InitializingBean {
      * @return
      */
     @Bean
-    @ConditionalOnBean(SimpleTransService.SimpleTransDiver.class)
-    public SimpleTransService simpleTransService(SimpleTransService.SimpleTransDiver dirver) {
+    @ConditionalOnBean({SimpleTransService.SimpleTransDiver.class})
+    public SimpleTransService simpleTransService(SimpleTransService.SimpleTransDiver dirver,RpcTransService rpcTransService) {
         SimpleTransService result = new SimpleTransService();
         result.regsiterTransDiver(dirver);
         return result;
