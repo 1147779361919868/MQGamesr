@@ -16,6 +16,8 @@
 # 食用步骤
 ## 技术经理/架构 需要做的事情
 1 、先把maven 引用加上（注意，阿里云Maven仓库因为阿里本身软件升级所以暂时无法同步中央仓库的新发布版本依赖，所以要用新版本请使用中央仓库maven）
+如果使用平铺模式，报classnotfind，请尝试降级到2.0.4。最近抽时间修复下。
+
 ``` xml
        <dependency>
             <groupId>com.fhs-opensource</groupId>
