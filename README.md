@@ -69,11 +69,15 @@ TK Mybatis(通用mapper) 扩展：
 ``` YAML
 easy-trans:
    #启用redis缓存 如果不用redis请设置为false
-   is-enable-redis: false
+   is-enable-redis: true
    #启用全局翻译(拦截所有responseBody进行自动翻译)，如果对于性能要求很高可关闭此配置
    is-enable-global: true 
    #启用平铺模式
    is-enable-tile: true
+   #字典缓存放到redis 微服务模式请开启
+   dict-use-redis: true 
+   # ruoyi相关的请开启
+   is-enable-map-result: true
 ```
 3、如果不使用redis，请在启动类加禁用掉redis的自动配置类
 ``` java
