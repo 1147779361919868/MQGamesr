@@ -97,6 +97,16 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
     }
 
     /**
+     * 删除字典分组缓存并且通知其他的微服务同步删除进程缓存
+     * @param dictGroupCode 字典分组编码
+     */
+    public void removeDictGroupAndNoticeOtherService(String dictGroupCode){
+        //删除完了之后重新插入
+        bothCacheService.remove(dictGroupCode + "*", false);
+        noticeOtherService(dictGroupCode);
+    }
+
+    /**
      * 通知其他的微服务刷新缓存
      * @param dictGroupCode  字典分组编码
      */
