@@ -8,8 +8,10 @@ import com.fhs.trans.service.impl.TransService;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FixedValue;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -49,6 +51,11 @@ public class TransUtil {
         boolean isVo = false;
         if (param.iterator().next() instanceof VO) {
             transService.transMore(new ArrayList<>(param));
+            for (Object tempObject : param) {
+                transFields(tempObject,transService,isProxy,hasTransObjs);
+            }
+
+            //vo 嵌套vo的时候不做
             isVo = true;
         } else {
             for (Object tempObject : param) {
@@ -72,7 +79,7 @@ public class TransUtil {
                 continue;
             }
             hasTransObjs.add(vo);
-            result.add(createProxyVoForJackson((VO) vo));
+            result.add(createProxyVo((VO) vo));
         }
         return result;
     }
@@ -130,24 +137,37 @@ public class TransUtil {
         } else if (object.getClass().getName().startsWith("java.")) {
             return object;
         } else {
-            List<Field> fields = ReflectUtils.getAllField(object);
-            Object tempObj = null;
-            for (Field field : fields) {
-                if (java.lang.reflect.Modifier.isFinal(field.getModifiers()) || java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
-                    continue;
-                }
-                field.setAccessible(true);
-                tempObj = field.get(object);
-                try {
-                    field.set(object, transOne(tempObj, transService, isProxy, hasTransObjs));
-                } catch (Exception e) {
-                    log.error("如果字段set错误，请反馈给easytrans开发者", e);
-                }
-
-            }
+            transFields(object,transService,isProxy,hasTransObjs);
         }
-        return (isProxy && isVo) ? createProxyVoForJackson((VO) object) : object;
+        return (isProxy && isVo) ? createProxyVo((VO) object) : object;
     }
+
+
+    /**
+     * 翻译一个object的子属性
+     * @param object
+     * @param transService
+     * @param isProxy
+     * @param hasTransObjs
+     */
+    public static void transFields(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException {
+        List<Field> fields = ReflectUtils.getAllField(object);
+        Object tempObj = null;
+        for (Field field : fields) {
+            if (java.lang.reflect.Modifier.isFinal(field.getModifiers()) || java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            field.setAccessible(true);
+            tempObj = field.get(object);
+            try {
+                field.set(object, transOne(tempObj, transService, isProxy, hasTransObjs));
+            } catch (Exception e) {
+                log.error("如果字段set错误，请反馈给easytrans开发者", e);
+            }
+
+        }
+    }
+
 
 
     /**
@@ -185,15 +205,21 @@ public class TransUtil {
                     //添加属性
                     builder = builder.defineField(property, String.class, Modifier.PUBLIC);
                 }
+
                 targetClass =  builder.make()
-                        .load(TransUtil.class.getClassLoader())
+                        .load(ClassUtils.getDefaultClassLoader(), ClassLoadingStrategy.Default.INJECTION)
                         .getLoaded();
                 proxyClassMap.put(vo.getClass(),targetClass);
                 proxyClassFieldMap.put(targetClass,vo.getTransMap().keySet());
             }
             return targetClass;
         } catch (Exception e) {
-            log.error("生成新class错误",e);
+            if(e instanceof ClassNotFoundException){
+                log.error("生成新class错误，目前不支持JDK17，请关闭平铺模式: easy-trans.is-enable-tile 设置为false");
+            }else{
+                log.error("生成新class错误",e);
+            }
+
         }
         return null;
     }
@@ -203,7 +229,7 @@ public class TransUtil {
      * @param vo
      * @return
      */
-    public static Object createProxyVoForJackson(VO vo) {
+    public static Object createProxyVo(VO vo) {
         if (vo == null || vo.getTransMap() == null) {
             return vo;
         }
