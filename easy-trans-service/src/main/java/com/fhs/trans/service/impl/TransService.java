@@ -104,9 +104,9 @@ public class TransService {
             tempTransFieldList = info.getTransField(type);
 
             if (includeFields != null) {
-                transFieldList = tempTransFieldList.stream().filter(field->includeFields.contains(field.getName())).collect(Collectors.toList());
+                transFieldList = tempTransFieldList.stream().filter(field -> includeFields.contains(field.getName())).collect(Collectors.toList());
             } else if (excludeFields != null) {
-                transFieldList = tempTransFieldList.stream().filter(field->!excludeFields.contains(field.getName())).collect(Collectors.toList());
+                transFieldList = tempTransFieldList.stream().filter(field -> !excludeFields.contains(field.getName())).collect(Collectors.toList());
             } else {
                 transFieldList = tempTransFieldList;
             }
