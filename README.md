@@ -8,7 +8,7 @@
 
 # 插件文档
 
-http://easy-trans.fhs-opensource.top/ 
+http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
 
 ## easy trans适用于5种场景   
 
