@@ -61,12 +61,13 @@ public class RedisCacheService<E> {
 
 
     public Long removeFuzzy(final String key) {
+        final String finalKey = key + "*";
         return redisTemplate.execute(new RedisCallback<Long>() {
 
             public Long doInRedis(RedisConnection connection)
                     throws DataAccessException {
                 long result = 0;
-                Set<byte[]> keys = connection.keys(key.getBytes());
+                Set<byte[]> keys = connection.keys(finalKey.getBytes());
                 for (byte[] keySet : keys) {
                     result += connection.del(keySet);
                 }
