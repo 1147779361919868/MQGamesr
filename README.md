@@ -7,8 +7,11 @@
 
 
 # 插件文档
+有问题先看文档哦！！！    
+http://easy-trans.fhs-opensource.top/ 
 
-http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
+# 求star
+我们非常需要您的star支持，就是右上角的那个小星星，帮忙点一下吧，抱拳啦！
 
 ## easy trans适用于5种场景   
 
@@ -18,16 +21,17 @@ http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
 4   我有一个枚举，枚举里有一个title字段，我想给前端展示title的值 给客户     
 5   我有一个唯一键(比如手机号，身份证号码，但是非其他表id字段)，但是我需要给客户展示他的title/name  但是我又不想自己手动做表关联查询   
 
+
 # 食用步骤
 ## 技术经理/架构 需要做的事情
-1 、先把maven 引用加上（注意，阿里云Maven仓库因为阿里本身软件升级所以暂时无法同步中央仓库的新发布版本依赖，所以要用新版本请使用中央仓库maven）
+1 、先把maven 引用加上（主starter+根据自己的ORM框架引入扩展)    
 
-
+starter--必须！！！
 ``` xml
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>2.1.6</version>
+            <version>2.1.7</version>
         </dependency>
 ```
    Mybatis plus 扩展：
@@ -35,7 +39,7 @@ http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-mybatis-plus-extend</artifactId>
-            <version>2.1.6</version>
+            <version>2.1.7</version>
         </dependency>
 ```
   JPA  扩展：
@@ -43,7 +47,7 @@ http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-jpa-extend</artifactId>
-            <version>2.1.6</version>
+            <version>2.1.7</version>
         </dependency>
 ```
 Beetl SQL 扩展：
@@ -51,7 +55,7 @@ Beetl SQL 扩展：
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-beetl-sql-extend</artifactId>
-            <version>2.1.6</version>
+            <version>2.1.7</version>
         </dependency>
 ```
 TK Mybatis(通用mapper) 扩展：
@@ -59,7 +63,7 @@ TK Mybatis(通用mapper) 扩展：
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-tk-extend</artifactId>
-            <version>2.1.6</version>
+            <version>2.1.7</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
@@ -75,7 +79,7 @@ TK Mybatis(通用mapper) 扩展：
 easy-trans:
    #启用redis缓存 如果不用redis请设置为false
    is-enable-redis: true
-   #启用全局翻译(拦截所有responseBody进行自动翻译)，如果对于性能要求很高可关闭此配置
+   #启用全局翻译(拦截所有responseBody进行自动翻译)，如果关闭需要手动调用翻译方法或者方法加注解，具体看文档
    is-enable-global: true 
    #启用平铺模式
    is-enable-tile: true
@@ -191,8 +195,7 @@ https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 17、江苏誉鸣航智能科技有限公司    
 18、maku-boot https://gitee.com/makunet/maku-boot    
 19、北京大美星空科技有限公司    
-# 求star
-如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
+
 
 # 作者二维码
 加作者二维码邀请进入官方群
