@@ -1,5 +1,7 @@
 package com.fhs.trans.utils;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fhs.common.utils.ConverterUtils;
 import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.util.ReflectUtils;
@@ -7,6 +9,7 @@ import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.TransService;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FixedValue;
@@ -127,8 +130,13 @@ public class TransUtil {
         if (transResultMap) {
             if (object instanceof Map) {
                 Map tempMap = (Map) object;
-                for (Object mapValue : tempMap.values()) {
-                    transOne(mapValue, transService, isProxy, hasTransObjs);
+                for (Object key : tempMap.keySet()) {
+                    Object mapValue = tempMap.get(key);
+                    try {
+                        tempMap.put(key, transOne(mapValue, transService, isProxy, hasTransObjs));
+                    } catch (Exception e) {
+                        //因为有一些map不允许修改，导致异常，不用处理就可以，最多平铺不成功。
+                    }
                 }
                 return object;
             }
@@ -202,11 +210,17 @@ public class TransUtil {
                 isGenNewClass = false;
             }
             if (isGenNewClass) {
+                AnnotationDescription jacksonIgnore = AnnotationDescription.Builder.ofType(JsonIgnore.class)
+                        .build();
+                AnnotationDescription fastJsonIgnore = AnnotationDescription.Builder.ofType(JSONField.class)
+                        .define("serialize", false)
+                        .build();
                 DynamicType.Builder<? extends Object> builder = new ByteBuddy()
                         .subclass(vo.getClass())
                         .name(vo.getClass().getSimpleName() + "DynamicTypeBuilder" + StringUtil.getUUID())
                         .defineMethod("getTransMap", Map.class, Modifier.PUBLIC)
-                        .intercept(FixedValue.value(new HashMap<>()));
+                        .intercept(FixedValue.nullValue())
+                        .annotateMethod(jacksonIgnore,fastJsonIgnore);
                 for (String property : vo.getTransMap().keySet()) {
                     //添加属性
                     builder = builder.defineField(property, String.class, Modifier.PUBLIC);
