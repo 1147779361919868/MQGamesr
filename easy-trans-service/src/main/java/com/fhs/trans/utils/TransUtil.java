@@ -13,6 +13,7 @@ import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FixedValue;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.ClassUtils;
 
@@ -202,7 +203,7 @@ public class TransUtil {
                 tempObj = field.get(object);
                 if (Objects.nonNull(tempObj) && tempObj instanceof List) {
                     List tempList = (List) tempObj;
-                    if (Objects.nonNull(tempList.get(0)) && tempList.get(0) instanceof VO) {
+                    if (!CollectionUtils.isEmpty(tempList) && Objects.nonNull(tempList.get(0)) && tempList.get(0) instanceof VO) {
                         Collection transResult = transBatch(tempObj, transService, isProxy, hasTransObjs, includeFields, excludeFields);
                         tempList.clear();
                         tempList.addAll(transResult);
