@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.Serializable;
@@ -81,6 +82,24 @@ public class RpcTransService extends SimpleTransService {
             log.error("trans service执行RPC Trans 远程调用错误:" + tempTrans.serviceName(), e);
         }
         return null;
+    }
+
+    /**
+     * 获取唯一键
+     *
+     * @param vo        vo
+     * @param tempTrans 翻译注解
+     * @return
+     */
+    public Object getUniqueKey(VO vo, Trans tempTrans) {
+        if(!isEnableCloud){
+            return super.getUniqueKey(vo,tempTrans);
+        }
+        if (StringUtils.isEmpty(tempTrans.uniqueField())) {
+            return vo.getPkey();
+        }
+        BasicVO basicVO = (BasicVO)vo;
+        return basicVO.getObjContentMap().get(tempTrans.uniqueField());
     }
 
     /**

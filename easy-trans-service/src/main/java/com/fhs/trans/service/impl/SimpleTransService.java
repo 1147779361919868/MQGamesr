@@ -394,19 +394,19 @@ class SimpleTrans implements Trans {
     /**
      * 翻译字段
      */
-    private String[] fields;
+    private String[] fields = new String[]{};
 
     /**
      * 别名
      */
-    private String alias;
+    private String alias = "";
 
     /**
      * 唯一键
      */
-    private String uniqueField;
+    private String uniqueField = "";
 
-    private String dataSource;
+    private String dataSource = "";
 
     public SimpleTrans(Trans anno) {
         this.anno = anno;
