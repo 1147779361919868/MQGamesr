@@ -1,5 +1,6 @@
 package com.fhs.trans.advice;
 
+import com.fhs.core.trans.anno.IgnoreTrans;
 import com.fhs.trans.service.impl.TransService;
 import com.fhs.trans.utils.TransUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,10 @@ public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
 
     @Override
     public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
+        // 如果主动指定了忽略某个方法，则不执行翻译
+        if(methodParameter.getExecutable().isAnnotationPresent(IgnoreTrans.class)){
+            return o;
+        }
         Object result = null;
         try {
             result = TransUtil.transOne(o,transService,isEnableTile,new ArrayList<>());
