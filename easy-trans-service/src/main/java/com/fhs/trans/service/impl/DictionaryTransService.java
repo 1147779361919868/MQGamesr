@@ -107,6 +107,21 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
     }
 
     /**
+     * 刷新单个字典，用于字典项的新增和修改操作
+     * @param dictGroupCode 分组编码
+     * @param dictCode 字典编码
+     * @param dictTransResult 字典翻译结果
+      */
+    public void refreshDictItem(String dictGroupCode,String dictCode,String dictTransResult){
+        //删除完了之后重新插入
+        bothCacheService.remove(dictGroupCode + '_' + dictCode, false);
+        Map<String,String> dicMap = new HashMap<>();
+        dicMap.put(dictCode,dictTransResult);
+        refreshCache(dictGroupCode, dicMap);
+        noticeOtherService(dictGroupCode+ '_' + dictCode);
+    }
+
+    /**
      * 通知其他的微服务刷新缓存
      * @param dictGroupCode  字典分组编码
      */
