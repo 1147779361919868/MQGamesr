@@ -91,7 +91,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
      */
     public void refreshCacheAndNoticeOtherService(String dictGroupCode, Map<String, String> dicMap) {
         //删除完了之后重新插入
-        bothCacheService.remove(dictGroupCode, false);
+        bothCacheService.remove(dictGroupCode + "*", false);
         refreshCache(dictGroupCode, dicMap);
         noticeOtherService(dictGroupCode);
     }
