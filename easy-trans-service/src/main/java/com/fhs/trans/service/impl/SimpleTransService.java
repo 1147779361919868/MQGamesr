@@ -2,6 +2,7 @@ package com.fhs.trans.service.impl;
 
 import com.fhs.common.utils.CheckUtils;
 import com.fhs.common.utils.ConverterUtils;
+import com.fhs.common.utils.JsonUtils;
 import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.anno.TransDefaultSett;
@@ -83,6 +84,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                         LOGGER.warn(this.getClass().getName() + "翻译未命中数据:" + tempTrans.target().getName() + "_" + tempPkey);
                         continue;
                     }
+                    tempTransCache.remove("targetObject");
                     // 比如学生表  可能有name和age 2个字段
                     for (String key : tempTransCache.keySet()) {
                         transCache.put(key, transCache.containsKey(key) ? transCache.get(key) + "," + tempTransCache.get(key)
@@ -106,6 +108,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             if (tempTransCache != null && !isMany) {
                 setRef(tempTrans, obj, transCache, (VO) tempTransCache.get("targetObject"));
             }
+
             Map<String, String> transMap = obj.getTransMap();
             if (transMap == null) {
                 continue;
@@ -264,8 +267,14 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         String className = getTargetClassName(tempTrans);
         String transType = this.getClass() == SimpleTransService.class ?
                 TransType.SIMPLE : TransType.RPC;
-        if (transCacheSettMap.containsKey(className) && getFromGlobalCache(pkey, className, transType) != null) {
-            return getFromGlobalCache(pkey, className, transType);
+        Map<String, Object>  voCacheMap = getFromGlobalCache(pkey, className, transType);
+        // 如果有缓存，则使用缓存不查DB
+        if (transCacheSettMap.containsKey(className) && voCacheMap != null) {
+            Map<String, Object> resultMap = new LinkedHashMap<>();
+            for (String field : tempTrans.fields()) {
+                resultMap.put(field,voCacheMap.get(field));
+            }
+            return resultMap;
         } else if (this.threadLocalCache.get() == null) {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
@@ -320,7 +329,14 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         String className = getTargetClassName(trans);
         if (transCacheSettMap.get(className) != null) {
             TransCacheSett cacheSett = transCacheSettMap.get(className);
-            put2GlobalCache(tempCacheTransMap, cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
+            Map<String, Object> voCacheMap = new LinkedHashMap<>();
+            //缓存对象把所有字段都放进去，因为不知道客户会要啥
+            List<Field> fields = ReflectUtils.getAllField(po.getClass());
+            for (Field field : fields) {
+                voCacheMap.put(field.getName(),ReflectUtils.getValue(po,field.getName()));
+            }
+            voCacheMap.put("targetObject",po);
+            put2GlobalCache(voCacheMap, cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
                     className, this.getClass() == SimpleTransService.class ?
                             TransType.SIMPLE : TransType.RPC);
         }
@@ -439,6 +455,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
          */
         private int maxCache = 1000;
     }
+
 }
 
 class SimpleTrans implements Trans {

@@ -163,6 +163,10 @@ public class TransUtil {
             }
         }
         if (object instanceof VO) {
+            //代理对象不重新翻译
+            if (object.getClass().getName().contains("DynamicTypeBuilder")) {
+                return object;
+            }
             transService.transOne((VO) object, includeFields, excludeFields);
             transFields(object, transService, isProxy, hasTransObjs, includeFields, excludeFields);
             isVo = true;
@@ -171,6 +175,7 @@ public class TransUtil {
         } else if (object.getClass().getName().startsWith("java.")) {
             return object;
         } else {
+
             transFields(object, transService, isProxy, hasTransObjs, includeFields, excludeFields);
         }
         return (isProxy && isVo) ? createProxyVo((VO) object) : object;

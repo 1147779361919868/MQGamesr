@@ -63,5 +63,13 @@ public class TransCacheManager {
         rpcTransService.setTransCache(targetClassName, cacheSett);
     }
 
+    /**
+     * 配置唯一键缓存
+     * @param targetClassName 目标类名
+     * @param uniqueField 唯一键字段
+     */
+    public void setUniqueFieldCache(String targetClassName,String uniqueField){
+        simpleTransService.setUniqueFieldCache(targetClassName,uniqueField);
+    }
 
 }

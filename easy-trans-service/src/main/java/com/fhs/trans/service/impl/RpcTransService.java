@@ -158,7 +158,7 @@ public class RpcTransService extends SimpleTransService {
         }
         if (transCacheSettMap.containsKey(trans.targetClassName())) {
             TransCacheSett cacheSett = transCacheSettMap.get(trans.targetClassName());
-            put2GlobalCache(tempCacheTransMap, cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
+            put2GlobalCache(basicVO.getObjContentMap(), cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
                     trans.targetClassName(), TransType.RPC);
         }
         return tempCacheTransMap;

@@ -36,6 +36,11 @@ public interface ITransTypeService {
      */
     Map<String, Cache<Object, Map<String, Object>>> GLOBAL_TRANS_CACHE = new HashMap<>();
 
+    /**
+     * key namespace value是对方的唯一键字段
+     */
+    Map<String,String> namespaceUniqueFieldMap = new HashMap<>();
+
 
     /**
      * 放缓存到全局中
@@ -52,6 +57,9 @@ public interface ITransTypeService {
             if (GLOBAL_TRANS_CACHE.containsKey(transType + namespace)) {
                 Cache<Object, Map<String, Object>> namespaceCache = GLOBAL_TRANS_CACHE.get(transType + namespace);
                 namespaceCache.put(ConverterUtils.toString(pkey), transResultMap);
+                if(namespaceUniqueFieldMap.containsKey(namespace)){
+                    namespaceCache.put(ConverterUtils.toString(transResultMap.get(namespaceUniqueFieldMap.get(namespace))), transResultMap);
+                }
             } else {
                 Caffeine<Object, Object> builder = Caffeine.newBuilder();
                 builder.maximumSize(max);
@@ -320,5 +328,14 @@ public interface ITransTypeService {
             Logger.error("", e);
         }
         return null;
+    }
+
+    /**
+     * 配置一个缓存对象多个key
+     * @param namespace  命名空间
+     * @param uniqueField 唯一键字段
+     */
+    default void setUniqueFieldCache(String namespace,String uniqueField){
+        namespaceUniqueFieldMap.put(namespace,uniqueField);
     }
 }
