@@ -10,6 +10,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 翻译服务
@@ -42,43 +43,73 @@ public class TransService {
      * @param obj 需要翻译的对象
      */
     public void transOne(VO obj) {
+        transOne(obj, null, null);
+    }
+
+    /**
+     * 翻译一个字段
+     *
+     * @param obj           需要翻译的对象
+     * @param includeFields 仅翻译的字段
+     * @param excludeFields 排除翻译的字段
+     */
+    public void transOne(VO obj, Set<String> includeFields, Set<String> excludeFields) {
         if (obj == null) {
             return;
         }
-        trans(null,obj);
+        trans(null, obj, includeFields, excludeFields);
     }
-
 
     /**
      * 翻译多个VO
      *
      * @param objList 需要翻译的对象集合
-     * @param objList 需要翻译的字段集合
      */
     public void transMore(List<? extends VO> objList) {
+        transMore(objList, null, null);
+    }
+
+    /**
+     * 翻译多个VO
+     *
+     * @param objList       需要翻译的对象集合
+     * @param includeFields 仅翻译的字段
+     * @param excludeFields 排除翻译的字段
+     */
+    public void transMore(List<? extends VO> objList, Set<String> includeFields, Set<String> excludeFields) {
         if (objList == null || objList.size() == 0) {
             return;
         }
-        trans(objList,null);
+        trans(objList, null, includeFields, excludeFields);
     }
 
     /**
      * 如果objList 不为null就走 transMore 否则就走transOne
+     *
      * @param objList 需要被翻译的集合
-     * @param obj 需要被翻译的单个对象
+     * @param obj     需要被翻译的单个对象
      */
-    private void trans(List<? extends VO> objList,VO obj){
-        ClassInfo info = ClassManager.getClassInfoByName(obj!=null ? obj.getClass() : objList.get(0).getClass());
+    private void trans(List<? extends VO> objList, VO obj, Set<String> includeFields, Set<String> excludeFields) {
+        ClassInfo info = ClassManager.getClassInfoByName(obj != null ? obj.getClass() : objList.get(0).getClass());
         if (info.getTransTypes() == null) {
             return;
         }
         Set<String> transTypes = new HashSet<>(Arrays.asList(info.getTransTypes()));
+        List<Field> tempTransFieldList = null;
         List<Field> transFieldList = null;
         for (String type : transTypeServiceMap.keySet()) {
             if (!transTypes.contains(type)) {
                 continue;
             }
-            transFieldList = info.getTransField(type);
+            tempTransFieldList = info.getTransField(type);
+
+            if (includeFields != null) {
+                transFieldList = tempTransFieldList.stream().filter(field->includeFields.contains(field.getName())).collect(Collectors.toList());
+            } else if (excludeFields != null) {
+                transFieldList = tempTransFieldList.stream().filter(field->!excludeFields.contains(field.getName())).collect(Collectors.toList());
+            } else {
+                transFieldList = tempTransFieldList;
+            }
             if (transFieldList == null || transFieldList.size() == 0) {
                 continue;
             }
@@ -94,10 +125,9 @@ public class TransService {
                 logger.warn("没有匹配的转换器:" + type);
                 continue;
             }
-            if(objList!=null){
+            if (objList != null) {
                 transTypeService.transMore(objList, transFieldList);
-            }
-            else{
+            } else {
                 transTypeService.transOne(obj, transFieldList);
             }
         }

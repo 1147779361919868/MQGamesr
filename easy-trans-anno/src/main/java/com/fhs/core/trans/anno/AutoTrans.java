@@ -78,7 +78,7 @@ public @interface AutoTrans {
      *  缓存时间 到秒
      * @return
      */
-    long cacheSeconds() default 1l;
+    long cacheSeconds() default 10l;
 
     /**
      * globalCache 为true有效

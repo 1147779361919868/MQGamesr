@@ -43,7 +43,8 @@ public class TransUtil {
      * @param isProxy      是否创建代理
      * @return
      */
-    public static Collection transBatch(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException, InstantiationException {
+    public static Collection transBatch(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs,
+                                        Set<String> includeFields, Set<String> excludeFields) throws IllegalAccessException, InstantiationException {
         Collection param = (Collection) object;
         if (param == null) {
             return null;
@@ -57,16 +58,15 @@ public class TransUtil {
             return param;
         }
         if (param.iterator().next() instanceof VO) {
-            transService.transMore(new ArrayList<>(param));
+            transService.transMore(new ArrayList<>(param), includeFields, excludeFields);
             for (Object tempObject : param) {
-                transFields(tempObject, transService, isProxy, hasTransObjs);
+                transFields(tempObject, transService, isProxy, hasTransObjs, includeFields, excludeFields);
             }
-
             //vo 嵌套vo的时候不做
             isVo = true;
         } else {
             for (Object tempObject : param) {
-                transOne(tempObject, transService, isProxy, hasTransObjs);
+                transOne(tempObject, transService, isProxy, hasTransObjs, includeFields, excludeFields);
             }
         }
         if (!isProxy || (!isVo)) {
@@ -89,6 +89,26 @@ public class TransUtil {
             result.add(createProxyVo((VO) vo));
         }
         return result;
+    }
+
+    /**
+     * 合并需要翻译的对象到集合
+     * @param vo vo
+     * @param vos vos
+     * @param voMap vomap
+     */
+    public static void mergeTransSubVo(VO vo, Collection<? extends VO> vos, Map<Class, List<? extends VO>> voMap) {
+        List hasVoList = null;
+        if (vo == null) {
+            vo = vos.iterator().next();
+        }
+        hasVoList = voMap.containsKey(vo.getClass()) ? voMap.get(vo.getClass()) : new ArrayList<>();
+        if(vos!=null){
+            hasVoList.addAll(vos);
+        }else{
+            hasVoList.add(vo);
+        }
+        voMap.put(vo.getClass(),hasVoList);
     }
 
     /**
@@ -117,7 +137,8 @@ public class TransUtil {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public static Object transOne(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException, InstantiationException {
+    public static Object transOne(Object object, TransService transService, boolean isProxy
+            , ArrayList<Object> hasTransObjs, Set<String> includeFields, Set<String> excludeFields) throws IllegalAccessException, InstantiationException {
         if (object == null) {
             return null;
         }
@@ -133,7 +154,7 @@ public class TransUtil {
                 for (Object key : tempMap.keySet()) {
                     Object mapValue = tempMap.get(key);
                     try {
-                        tempMap.put(key, transOne(mapValue, transService, isProxy, hasTransObjs));
+                        tempMap.put(key, transOne(mapValue, transService, isProxy, hasTransObjs, includeFields, excludeFields));
                     } catch (Exception e) {
                         //因为有一些map不允许修改，导致异常，不用处理就可以，最多平铺不成功。
                     }
@@ -142,14 +163,15 @@ public class TransUtil {
             }
         }
         if (object instanceof VO) {
-            transService.transOne((VO) object);
+            transService.transOne((VO) object, includeFields, excludeFields);
+            transFields(object, transService, isProxy, hasTransObjs, includeFields, excludeFields);
             isVo = true;
         } else if (object instanceof Collection) {
-            return transBatch(object, transService, isProxy, hasTransObjs);
+            return transBatch(object, transService, isProxy, hasTransObjs, includeFields, excludeFields);
         } else if (object.getClass().getName().startsWith("java.")) {
             return object;
         } else {
-            transFields(object, transService, isProxy, hasTransObjs);
+            transFields(object, transService, isProxy, hasTransObjs, includeFields, excludeFields);
         }
         return (isProxy && isVo) ? createProxyVo((VO) object) : object;
     }
@@ -163,7 +185,8 @@ public class TransUtil {
      * @param isProxy
      * @param hasTransObjs
      */
-    public static void transFields(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException {
+    public static void transFields(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs
+            , Set<String> includeFields, Set<String> excludeFields) throws IllegalAccessException {
         List<Field> fields = ReflectUtils.getAllField(object);
         Object tempObj = null;
         for (Field field : fields) {
@@ -173,7 +196,7 @@ public class TransUtil {
             field.setAccessible(true);
             tempObj = field.get(object);
             try {
-                field.set(object, transOne(tempObj, transService, isProxy, hasTransObjs));
+                field.set(object, transOne(tempObj, transService, isProxy, hasTransObjs, includeFields, excludeFields));
             } catch (Exception e) {
                 log.error("如果字段set错误，请反馈给easytrans开发者", e);
             }
@@ -220,7 +243,7 @@ public class TransUtil {
                         .name(vo.getClass().getSimpleName() + "DynamicTypeBuilder" + StringUtil.getUUID())
                         .defineMethod("getTransMap", Map.class, Modifier.PUBLIC)
                         .intercept(FixedValue.nullValue())
-                        .annotateMethod(jacksonIgnore,fastJsonIgnore);
+                        .annotateMethod(jacksonIgnore, fastJsonIgnore);
                 for (String property : vo.getTransMap().keySet()) {
                     //添加属性
                     builder = builder.defineField(property, String.class, Modifier.PUBLIC);

@@ -39,7 +39,9 @@ public interface AutoTransable<V extends VO> {
      *
      * @return db中所有的数据
      */
-    List<V> select();
+    default List<V> select(){
+        return new ArrayList<>();
+    }
 
     /**
      * 根据id获取 vo
