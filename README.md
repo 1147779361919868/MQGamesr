@@ -8,7 +8,7 @@
 
 # 插件文档
 
-http://easy-trans.fhs-opensource.top/ 
+http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
 
 ## easy trans适用于5种场景   
 
@@ -27,7 +27,7 @@ http://easy-trans.fhs-opensource.top/
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>2.1.7</version>
+            <version>2.1.6</version>
         </dependency>
 ```
    Mybatis plus 扩展：
@@ -35,7 +35,7 @@ http://easy-trans.fhs-opensource.top/
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-mybatis-plus-extend</artifactId>
-            <version>2.1.7</version>
+            <version>2.1.6</version>
         </dependency>
 ```
   JPA  扩展：
@@ -43,7 +43,7 @@ http://easy-trans.fhs-opensource.top/
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-jpa-extend</artifactId>
-            <version>2.1.7</version>
+            <version>2.1.6</version>
         </dependency>
 ```
 Beetl SQL 扩展：
@@ -51,7 +51,7 @@ Beetl SQL 扩展：
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-beetl-sql-extend</artifactId>
-            <version>2.1.7</version>
+            <version>2.1.6</version>
         </dependency>
 ```
 TK Mybatis(通用mapper) 扩展：
@@ -59,7 +59,7 @@ TK Mybatis(通用mapper) 扩展：
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-tk-extend</artifactId>
-            <version>2.1.7</version>
+            <version>2.1.6</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
