@@ -53,7 +53,7 @@ public interface ITransTypeService {
                 Cache<Object, Map<String, Object>> namespaceCache = GLOBAL_TRANS_CACHE.get(transType + namespace);
                 namespaceCache.put(ConverterUtils.toString(pkey), transResultMap);
             } else {
-                Caffeine<Object, Object> builder =  Caffeine.newBuilder();
+                Caffeine<Object, Object> builder = Caffeine.newBuilder();
                 builder.maximumSize(max);
                 if (isAccess) {
                     builder.expireAfterAccess(cacheSeconds, TimeUnit.SECONDS);
@@ -69,11 +69,12 @@ public interface ITransTypeService {
 
     /**
      * 清理掉缓存
-     * @param pkey  主键
+     *
+     * @param pkey      主键
      * @param namespace 命名空间
      * @param transType 翻译类型
      */
-    default void clearGlobalCache(Object pkey, String namespace, String transType){
+    default void clearGlobalCache(Object pkey, String namespace, String transType) {
         if (GLOBAL_TRANS_CACHE.containsKey(transType + namespace)) {
             Cache<Object, Map<String, Object>> namespaceCache = GLOBAL_TRANS_CACHE.get(transType + namespace);
             namespaceCache.invalidate(ConverterUtils.toString(pkey));
@@ -100,6 +101,7 @@ public interface ITransTypeService {
 
     /**
      * 把全局有的缓存放到threadlocal里面去，并且把id在ids过滤掉
+     *
      * @param threadLocalCache
      * @param ids
      * @param namespace
@@ -111,8 +113,8 @@ public interface ITransTypeService {
         for (Object id : ids) {
             Map<String, Object> transResultMap = getFromGlobalCache(id, namespace, transType);
             if (transResultMap != null) {
-                threadLocalCache.get().put(namespace + "_" + id,transResultMap);
-            }else{
+                threadLocalCache.get().put(namespace + "_" + id, transResultMap);
+            } else {
                 resultIds.add(id);
             }
         }
@@ -169,6 +171,10 @@ public interface ITransTypeService {
             boolean isSetRef = false;
             if (target != null) {
                 Field field = ReflectUtils.getDeclaredField(vo.getClass(), trans.ref());
+                if (field == null) {
+                    Logger.error("ref属性:" + trans.ref() + "对应的字段不存在");
+                    return;
+                }
                 if (field.getType() == target.getClass()) {
                     isSetRef = true;
                     ReflectUtils.setValue(vo, trans.ref(), target);
