@@ -21,7 +21,6 @@
         <module>easy-trans-jpa-extend</module>
         <module>easy-trans-tk-extend</module>
         <module>easy-trans-beetl-sql-extend</module>
-        <module>easy-trans-cache</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
