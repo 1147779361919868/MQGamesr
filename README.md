@@ -10,6 +10,9 @@
 有问题先看文档哦！！！    
 http://easy-trans.fhs-opensource.top/ 
 
+# 求star
+我们非常需要您的star支持，就是右上角的那个小星星，帮忙点一下吧，抱拳啦！
+
 ## easy trans适用于5种场景   
 
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想自己手动做表关联查询   
@@ -17,6 +20,7 @@ http://easy-trans.fhs-opensource.top/
 3   我有一组user id 比如 1，2,3  我希望能展示成 张三,李四,王五 给客户   
 4   我有一个枚举，枚举里有一个title字段，我想给前端展示title的值 给客户     
 5   我有一个唯一键(比如手机号，身份证号码，但是非其他表id字段)，但是我需要给客户展示他的title/name  但是我又不想自己手动做表关联查询   
+
 
 # 食用步骤
 ## 技术经理/架构 需要做的事情
@@ -191,8 +195,7 @@ https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 17、江苏誉鸣航智能科技有限公司    
 18、maku-boot https://gitee.com/makunet/maku-boot    
 19、北京大美星空科技有限公司    
-# 求star
-如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
+
 
 # 作者二维码
 加作者二维码邀请进入官方群
