@@ -182,8 +182,8 @@ https://www.kancloud.cn/shuaizai88/easy-trans/3100797
 15、江西云牛科技        
 16、广州彩讯数字技术有限公司    
 17、江苏誉鸣航智能科技有限公司    
-18、maku-boot https://gitee.com/makunet/maku-boot
-
+18、maku-boot https://gitee.com/makunet/maku-boot    
+19、北京大美星空科技有限公司    
 # 求star
 如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
 
