@@ -82,8 +82,9 @@ public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTra
             if (!StringUtil.isEmpty(uniqueField)) {
                 targetFields.add(uniqueField);
             }
+            boolean autoInitResultMap = isAutoInitResultMap(targetClass);
             queryWrapper.select(targetFields.stream().map(column -> {
-                return this.getColumn(targetClass, column) + " AS " + column;
+                return autoInitResultMap ? this.getColumn(targetClass, column) : (this.getColumn(targetClass, column) + " AS " + column);
             }).toArray(String[]::new));
         }
         return queryWrapper;
@@ -123,6 +124,16 @@ public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTra
     private String getKeyProperty(Class<? extends VO> targetClass) {
         TableInfo tableInfo = Optional.ofNullable(TableInfoHelper.getTableInfo(targetClass)).orElseThrow(() -> ExceptionUtils.mpe("Can not find TableInfo from Class: \"%s\".", targetClass.getName()));
         return tableInfo.getKeyProperty();
+    }
+
+    /**
+     * 是否自动生成resultmap
+     * @param targetClass 目标po
+     * @return
+     */
+    private boolean isAutoInitResultMap(Class<? extends VO> targetClass) {
+        TableInfo tableInfo = Optional.ofNullable(TableInfoHelper.getTableInfo(targetClass)).orElseThrow(() -> ExceptionUtils.mpe("Can not find TableInfo from Class: \"%s\".", targetClass.getName()));
+        return tableInfo.isAutoInitResultMap();
     }
 
     protected SqlSession sqlSession(Class<? extends VO> voClass) {
