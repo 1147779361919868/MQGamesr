@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * 用来释放资源
  */
 @Order(0)
-@WebFilter(filterName = "releaseTransCacheFilter", urlPatterns = "/*")
+@WebFilter(filterName = "releaseTransCacheFilter", urlPatterns = "/*",asyncSupported=true)
 public class ReleaseTransCacheFilter implements Filter {
 
     @Override
