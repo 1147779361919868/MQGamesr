@@ -85,7 +85,7 @@ public class ClassInfo implements Serializable {
      * @return 字段集合
      */
     public List<Field> getTransField(String type) {
-        return transFieldMap.get(type);
+        return new ArrayList<>(transFieldMap.get(type));
     }
 
     private void getClazzFieldMap() throws InstantiationException, IllegalAccessException {

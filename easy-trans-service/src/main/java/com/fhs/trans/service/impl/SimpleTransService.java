@@ -71,7 +71,9 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             // 主键可能是数组
             pkey = pkey.replace("[", "").replace("]", "");
             Map<String, Object> tempTransCache = null;
+            boolean isMany = false;
             if (pkey.contains(",")) {
+                isMany = true;
                 String[] pkeys = pkey.split(",");
                 transCache = new LinkedHashMap<>();
 
@@ -101,7 +103,9 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     }
                 });
             }
-            setRef(tempTrans, obj, transCache, (VO) tempTransCache.get("targetObject"));
+            if (tempTransCache != null && !isMany) {
+                setRef(tempTrans, obj, transCache, (VO) tempTransCache.get("targetObject"));
+            }
             Map<String, String> transMap = obj.getTransMap();
             if (transMap == null) {
                 continue;
@@ -245,7 +249,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      */
     public VO findById(Object id, Trans tempTrans) {
         return findById(() -> {
-            return transDiver.findById((Serializable) id, tempTrans.target(), tempTrans.uniqueField(),new HashSet<>(Arrays.asList(tempTrans.fields())));
+            return transDiver.findById((Serializable) id, tempTrans.target(), tempTrans.uniqueField(), new HashSet<>(Arrays.asList(tempTrans.fields())));
         }, tempTrans.dataSource());
     }
 
@@ -401,9 +405,9 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         /**
          * 根据id查询对象
          *
-         * @param id          id
-         * @param targetClass 目标类类名
-         * @param uniqueField 唯一键字段
+         * @param id           id
+         * @param targetClass  目标类类名
+         * @param uniqueField  唯一键字段
          * @param targetFields 目标表的字段
          * @return
          */
