@@ -75,7 +75,7 @@ TK Mybatis(通用mapper) 扩展：
 easy-trans:
    #启用redis缓存 如果不用redis请设置为false
    is-enable-redis: true
-   #启用全局翻译(拦截所有responseBody进行自动翻译)，如果对于性能要求很高可关闭此配置
+   #启用全局翻译(拦截所有responseBody进行自动翻译)，如果关闭需要手动调用翻译方法或者方法加注解，具体看文档
    is-enable-global: true 
    #启用平铺模式
    is-enable-tile: true
