@@ -7,8 +7,8 @@
 
 
 # 插件文档
-
-http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
+有问题先看文档哦！！！    
+http://easy-trans.fhs-opensource.top/ 
 
 ## easy trans适用于5种场景   
 
@@ -20,9 +20,9 @@ http://easy-trans.fhs-opensource.top/ (服务器到期，正在处理中)
 
 # 食用步骤
 ## 技术经理/架构 需要做的事情
-1 、先把maven 引用加上（注意，阿里云Maven仓库因为阿里本身软件升级所以暂时无法同步中央仓库的新发布版本依赖，所以要用新版本请使用中央仓库maven）
+1 、先把maven 引用加上（主starter+根据自己的ORM框架引入扩展)    
 
-
+starter--必须！！！
 ``` xml
        <dependency>
             <groupId>com.fhs-opensource</groupId>
