@@ -1,5 +1,7 @@
 package com.fhs.trans.config;
 
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.trans.extend.MybatisPlusSimpleTransDiver;
 import com.fhs.trans.extend.MybatisPlusTransableRegister;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,7 @@ public class EasyTransMybatisPlusConfig {
     @Bean
     @Primary
     public MybatisPlusSimpleTransDiver MybatisPlusSimpleTransDiver() {
+        ReflectUtils.ID_ANNO.add(TableId.class);
         return new MybatisPlusSimpleTransDiver();
     }
 }

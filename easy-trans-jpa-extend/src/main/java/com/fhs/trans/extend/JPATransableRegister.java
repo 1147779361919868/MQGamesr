@@ -1,13 +1,11 @@
 package com.fhs.trans.extend;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.core.trans.anno.AutoTrans;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.AutoTransAble;
 import com.fhs.trans.service.impl.AutoTransService;
 import lombok.Data;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;

@@ -12,6 +12,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static com.fhs.core.trans.util.ReflectUtils.getAllField;
 
@@ -23,6 +24,8 @@ public class TransUtil {
      * 有一些框架的vo封装类 是一个map，为了适配加个开关，打开性能有影响
      */
     public static boolean transResultMap = false;
+
+
 
 
     /**

@@ -1,5 +1,6 @@
 package com.fhs.trans.config;
 
+import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.trans.extend.JPASimpleTransDiver;
 import com.fhs.trans.extend.JPATransableRegister;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Id;
 
 /**
  * JPA适配器
@@ -34,6 +36,7 @@ public class EasyTransJPAConfig {
 
     @Bean
     public JPASimpleTransDiver jpaSimpleTransDiver(EntityManager em) {
+        ReflectUtils.ID_ANNO.add(Id.class);
         JPASimpleTransDiver result = new JPASimpleTransDiver(em);
         return result;
     }

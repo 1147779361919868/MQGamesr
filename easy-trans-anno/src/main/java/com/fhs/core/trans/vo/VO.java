@@ -65,7 +65,7 @@ public interface VO {
     @JsonIgnore
     @JSONField(serialize = false)
     default Object getPkey() {
-        Field idField = getIdField(true);
+        Field idField = ReflectUtils.getIdField(this.getClass(),true);
         try {
             return idField.get(this);
         } catch (IllegalAccessException e) {
@@ -74,40 +74,7 @@ public interface VO {
     }
 
 
-    /**
-     * 获取子类id字段
-     *
-     * @return 子类id字段
-     */
-    @JsonIgnore
-    @JSONField(serialize = false)
-    default Field getIdField(boolean isThrowError) {
-        if (ID_FIELD_CACHE_MAP.containsKey(this.getClass())) {
-            return ID_FIELD_CACHE_MAP.get(this.getClass());
-        }
-        Field idField = null;
-        List<Field> fieldList = null;
-        // jpa
-        for (Class anno : ID_ANNO) {
-            fieldList = ReflectUtils.getAnnotationField(this.getClass(), anno);
-            if (!fieldList.isEmpty()) {
-                idField = fieldList.get(0);
-                break;
-            }
-        }
-        if(idField==null){
-            idField = ReflectUtils.getDeclaredField(this.getClass(), "id");
-            if (idField == null && isThrowError) {
-                throw new RuntimeException("找不到" + this.getClass() + "的id注解");
-            }
-        }
-        if (idField != null) {
-            idField.setAccessible(true);
-            ID_FIELD_CACHE_MAP.put(this.getClass(), idField);
-            return idField;
-        }
-        return null;
-    }
+
 
 
 }

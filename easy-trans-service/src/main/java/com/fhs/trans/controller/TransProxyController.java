@@ -1,25 +1,17 @@
 package com.fhs.trans.controller;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.fhs.common.utils.ConverterUtils;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.SimpleTransService;
 import com.fhs.trans.vo.BasicVO;
 import com.fhs.trans.vo.FindByIdsQueryPayload;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
-
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,15 +63,7 @@ public class TransProxyController {
      * @throws ClassNotFoundException 如果类不存在
      */
     private Class getPkeyFieldType(String targetClass) throws ClassNotFoundException {
-        Class<? extends VO> clazz = (Class<? extends VO>) Class.forName(targetClass);
-        List<Field> fieldList = ReflectUtils.getAnnotationField(clazz, javax.persistence.Id.class);
-        if (fieldList.size() == 0) {
-            fieldList = ReflectUtils.getAnnotationField(clazz, TableId.class);
-            if (fieldList.size() == 0) {
-                throw new RuntimeException("找不到" + clazz + "的id注解");
-            }
-        }
-        return fieldList.get(0).getType();
+        return ReflectUtils.getIdField(Class.forName(targetClass),true).getType();
     }
 
     /**

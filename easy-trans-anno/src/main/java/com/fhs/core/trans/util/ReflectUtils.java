@@ -1,5 +1,7 @@
 package com.fhs.core.trans.util;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ReflectUtils {
 
+    private static final Map<Class<?>, Field> ID_FIELD_CACHE_MAP = new HashMap<>();
+    public static final Set<Class> ID_ANNO = new HashSet<>();
 
     /**
      * 调用obj的setfield 方法设置value
@@ -45,6 +49,7 @@ public class ReflectUtils {
             log.error("给" + obj + "的字段" + fieldName + "设置值" + value + "错误", e);
         }
     }
+
 
     /**
      * 给class的field设置值
@@ -305,5 +310,38 @@ public class ReflectUtils {
             return name.equals(method.getName());
         }).collect(Collectors.toList());
         return methods.isEmpty() ? null : methods.get(0);
+    }
+
+    /**
+     * 获取子类id字段
+     *
+     * @return 子类id字段
+     */
+    public static Field getIdField(Class clazz,boolean isThrowError) {
+        if (ID_FIELD_CACHE_MAP.containsKey(clazz)) {
+            return ID_FIELD_CACHE_MAP.get(clazz);
+        }
+        Field idField = null;
+        List<Field> fieldList = null;
+        // jpa
+        for (Class anno : ID_ANNO) {
+            fieldList = ReflectUtils.getAnnotationField(clazz, anno);
+            if (!fieldList.isEmpty()) {
+                idField = fieldList.get(0);
+                break;
+            }
+        }
+        if(idField==null){
+            idField = ReflectUtils.getDeclaredField(clazz, "id");
+            if (idField == null && isThrowError) {
+                throw new RuntimeException("找不到" + clazz + "的id注解");
+            }
+        }
+        if (idField != null) {
+            idField.setAccessible(true);
+            ID_FIELD_CACHE_MAP.put(clazz, idField);
+            return idField;
+        }
+        return null;
     }
 }

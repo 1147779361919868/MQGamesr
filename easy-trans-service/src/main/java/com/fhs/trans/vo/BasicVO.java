@@ -1,11 +1,8 @@
 package com.fhs.trans.vo;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.fhs.common.utils.ConverterUtils;
 import com.fhs.core.trans.vo.VO;
 import lombok.Data;
 
-import javax.persistence.Id;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +12,6 @@ import java.util.Map;
 @Data
 public class BasicVO implements VO {
 
-    @Id
-    @TableId
     private String id;
 
     /**

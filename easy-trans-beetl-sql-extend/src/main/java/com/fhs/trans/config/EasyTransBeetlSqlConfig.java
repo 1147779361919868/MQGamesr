@@ -1,5 +1,6 @@
 package com.fhs.trans.config;
 
+import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.extend.BeetlSqlTransDiver;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,6 @@ public class EasyTransBeetlSqlConfig implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        VO.ID_ANNO.add(AssignID.class);
+        ReflectUtils.ID_ANNO.add(AssignID.class);
     }
 }
