@@ -1,5 +1,6 @@
 package com.fhs.cache.service;
 
+import com.fhs.common.utils.StringUtil;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -56,17 +58,20 @@ public class BothCacheService<T> {
      * @return value
      */
     public T get(String key) {
-        if (localCacheMap.containsKey(key)) {
-            return localCacheMap.get(key);
-        }
-        if (redisCacheService != null && useRedis) {
-            T result = redisCacheService.get(TRANS_PRE + key);
-            if (result != null) {
-                localCacheMap.put(key, result);
+        if(StringUtil.isEmpty(key)){
+            if (localCacheMap.containsKey(key)) {
+                return localCacheMap.get(key);
             }
-            return result;
+            if (redisCacheService != null && useRedis) {
+                T result = redisCacheService.get(TRANS_PRE + key);
+                if (Objects.nonNull(result)) {
+                    localCacheMap.put(key, result);
+                }
+                return result;
+            }
+            return null;
         }
-        return null;
+      return null;
     }
 
     /**
@@ -76,7 +81,7 @@ public class BothCacheService<T> {
      * @param onlyLocal    是否只删除本地key
      */
     public void remove(String keyStartWith, boolean onlyLocal) {
-        if (!onlyLocal && redisCacheService != null && useRedis) {
+        if (!onlyLocal && Objects.nonNull(redisCacheService) && useRedis) {
             //模糊删除
             redisCacheService.removeFuzzy(TRANS_PRE + keyStartWith);
             // redisCacheService.remove(TRANS_PRE + keyStartWith);

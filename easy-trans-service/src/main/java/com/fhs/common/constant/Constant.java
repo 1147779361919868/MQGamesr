@@ -13,10 +13,12 @@ public interface Constant {
      * 禁用
      */
     Integer DISABLE = 0;
+
     /**
      * 启用
      */
     Integer ENABLED = 1;
+
     /**
      * 验证码生成几位参数
      */
@@ -37,10 +39,12 @@ public interface Constant {
      * 否
      */
     int INT_FALSE = 0;
+
     /**
      * 是
      */
     String STR_YES = "1";
+
     /**
      * 否
      */
@@ -293,7 +297,6 @@ public interface Constant {
 
     void test();
 
-
     /**
      * 分号
      */
@@ -309,12 +312,10 @@ public interface Constant {
      */
     String LIST = "list";
 
-
     /**
      * 验证码过期
      */
     int CODE_OVERDUE = 201;
-
 
     /**
      * 年
@@ -350,7 +351,6 @@ public interface Constant {
      * 毫秒
      */
     String MILLISECOND = "millisecond";
-
 
     /**
      * 日期格式化字符串年月日格式
