@@ -5,6 +5,7 @@ import com.fhs.common.utils.ConverterUtils;
 import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
+import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.listener.TransMessageListener;
 import com.fhs.trans.vo.BasicVO;
@@ -142,9 +143,9 @@ public class RpcTransService extends SimpleTransService {
      * @param trans 配置
      * @return
      */
-    protected Map<String, Object> createTempTransCacheMap(VO po, Trans trans) {
+    protected Map<String, Object> createTempTransCacheMap(VO po, Trans trans,Set<String> targetFields) {
         if (!isEnableCloud) {
-            return super.createTempTransCacheMap(po, trans);
+            return super.createTempTransCacheMap(po, trans,targetFields);
         }
         String fielVal = null;
         Map<String, Object> tempCacheTransMap = new LinkedHashMap<>();
@@ -152,7 +153,8 @@ public class RpcTransService extends SimpleTransService {
             return tempCacheTransMap;
         }
         BasicVO basicVO = (BasicVO) po;
-        for (String field : trans.fields()) {
+        List<String> tempFields =  targetFields!=null ? new ArrayList<>(targetFields) : Arrays.asList(trans.fields());
+        for (String field : tempFields) {
             fielVal = ConverterUtils.toString(basicVO.getObjContentMap().get(field));
             tempCacheTransMap.put(field, fielVal);
         }

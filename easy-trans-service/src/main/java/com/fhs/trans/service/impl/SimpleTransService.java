@@ -189,7 +189,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     List<? extends VO> dbDatas = findByIds(new ArrayList<Object>(ids), tempTrans, targetFields);
                     for (VO vo : dbDatas) {
                         threadLocalCache.get().put(getTargetClassName(tempTrans) + "_" + getUniqueKey(vo, tempTrans),
-                                createTempTransCacheMap(vo, tempTrans));
+                                createTempTransCacheMap(vo, tempTrans,targetFields));
                     }
                 }
             }
@@ -275,15 +275,25 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                 resultMap.put(field,voCacheMap.get(field));
             }
             return resultMap;
+         //没有缓存尝试 threadLocalCache 又是空的话 直接去查询
         } else if (this.threadLocalCache.get() == null) {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
             }
             VO vo = this.findById(pkey, tempTrans);
-            return createTempTransCacheMap(vo, tempTrans);
+            return createTempTransCacheMap(vo, tempTrans,null);
+        }else{
+            // 有缓存 但是不一定匹配到
+            voCacheMap = this.threadLocalCache.get().get(getTargetClassName(tempTrans) + "_" + pkey);
+            if(voCacheMap == null){
+                return null;
+            }
+            Map<String, Object> resultMap = new LinkedHashMap<>();
+            for (String field : tempTrans.fields()) {
+                resultMap.put(field,voCacheMap.get(field));
+            }
+            return resultMap;
         }
-        // 兼容RPC Trans
-        return this.threadLocalCache.get().get(getTargetClassName(tempTrans) + "_" + pkey);
     }
 
     /**
@@ -315,13 +325,14 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param trans 配置
      * @return
      */
-    protected Map<String, Object> createTempTransCacheMap(VO po, Trans trans) {
+    protected Map<String, Object> createTempTransCacheMap(VO po, Trans trans,Set<String> targetFields) {
         String fielVal = null;
         Map<String, Object> tempCacheTransMap = new LinkedHashMap<>();
         if (po == null) {
             return tempCacheTransMap;
         }
-        for (String field : trans.fields()) {
+        List<String> tempFields =  targetFields!=null ? new ArrayList<>(targetFields) : Arrays.asList(trans.fields());
+        for (String field : tempFields) {
             fielVal = ConverterUtils.toString(ReflectUtils.getValue(po, field));
             tempCacheTransMap.put(field, fielVal);
         }
