@@ -166,7 +166,7 @@ https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 
 # 插件文档
 
-见本仓库wiki。    
+https://www.kancloud.cn/shuaizai88/easy-trans/3100800    
 
 # 已经使用此插件的企业
 1、陕西小伙伴网络科技有限公司   
