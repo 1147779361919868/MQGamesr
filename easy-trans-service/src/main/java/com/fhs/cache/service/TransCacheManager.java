@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 翻译缓存管理器
@@ -35,13 +36,13 @@ public class TransCacheManager {
      * @param pkey        主键
      */
     public void clearCache(Class targetClass, Object pkey) {
-        if (simpleTransService != null) {
+        if (Objects.nonNull(simpleTransService)) {
             simpleTransService.clearGlobalCache(pkey, targetClass.getName(), TransType.SIMPLE);
         }
-        if (rpcTransService != null) {
+        if (Objects.nonNull(rpcTransService)) {
             rpcTransService.clearGlobalCache(pkey, targetClass.getName(), TransType.RPC);
         }
-        if (redisCacheService != null) {
+        if (Objects.nonNull(redisCacheService)) {
             Map<String, String> body = new HashMap<>();
             body.put("messageType", "clear");
             body.put("target", targetClass.getName());
