@@ -76,6 +76,13 @@ public @interface Trans {
     String serviceName() default "";
 
     /**
+     * 远程服务 ContextPath
+     *
+     * @return
+     */
+    String serviceContextPath() default "";
+
+    /**
      * @return
      */
     String targetClassName() default "";

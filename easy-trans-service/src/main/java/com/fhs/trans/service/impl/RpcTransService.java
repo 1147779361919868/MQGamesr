@@ -2,18 +2,16 @@ package com.fhs.trans.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.fhs.common.utils.ConverterUtils;
+import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
-import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.listener.TransMessageListener;
 import com.fhs.trans.vo.BasicVO;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.Serializable;
@@ -34,18 +32,32 @@ public class RpcTransService extends SimpleTransService {
     @Value("${easy-trans.is-enable-cloud:true}")
     private Boolean isEnableCloud;
 
+    /**
+     * 用来全局配置其他微服务的ContextPath
+     */
+    private Map<String,String> serviceContextPathConfigMap = new HashMap<>();
+
+    /**
+     * 添加ContextPath 配置
+     * @param serviceName 服务名称
+     * @param contextPath 服务路径
+     */
+    public void addContextPath(String serviceName,String contextPath){
+        this.serviceContextPathConfigMap.put(serviceName,contextPath);
+    }
+
     @Override
     public List<? extends VO> findByIds(List ids, Trans tempTrans) {
         //如果没开启springcloud 则走SimpleTransService逻辑
-        if(!isEnableCloud){
+        if (!isEnableCloud) {
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
-                return findByIds(()->{
-                    return transDiver.findByIds(ids, clazz,tempTrans.uniqueField());
-                },tempTrans.dataSource());
+                return findByIds(() -> {
+                    return transDiver.findByIds(ids, clazz, tempTrans.uniqueField());
+                }, tempTrans.dataSource());
 
             } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName() );
+                throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName());
             }
         }
         Map<String, Object> paramMap = new HashMap<>();
@@ -54,6 +66,7 @@ public class RpcTransService extends SimpleTransService {
         //执行远程调用
         try {
             String respJson = restTemplate.postForObject("http://" + tempTrans.serviceName()
+                    + getContextPath(tempTrans)
                     + "/easyTrans/proxy/" + tempTrans.targetClassName() + "/findByIds", paramMap, String.class);
             return JSONArray.parseArray(respJson, BasicVO.class);
         } catch (Exception e) {
@@ -64,24 +77,38 @@ public class RpcTransService extends SimpleTransService {
 
     @Override
     public VO findById(Object id, Trans tempTrans) {
-        if(!isEnableCloud){
+        if (!isEnableCloud) {
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
-                return findById(()->{
-                    return transDiver.findById((Serializable)id, clazz,tempTrans.uniqueField());
-                },tempTrans.dataSource());
+                return findById(() -> {
+                    return transDiver.findById((Serializable) id, clazz, tempTrans.uniqueField());
+                }, tempTrans.dataSource());
             } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName() );
+                throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName());
             }
         }
         //执行远程调用
         try {
             return restTemplate.getForObject("http://" + tempTrans.serviceName()
-                    + "/easyTrans/proxy/" + tempTrans.targetClassName() + "/findById/" + id + "?uniqueField=" + tempTrans.uniqueField(), BasicVO.class);
+                    + getContextPath(tempTrans)
+                    + "/easyTrans/proxy/" + tempTrans.targetClassName()
+                    + "/findById/" + id + "?uniqueField=" + tempTrans.uniqueField(), BasicVO.class);
         } catch (Exception e) {
             log.error("trans service执行RPC Trans 远程调用错误:" + tempTrans.serviceName(), e);
         }
         return null;
+    }
+
+    /**
+     * 获取微服务的contextpath
+     * @param tempTrans  trans配置
+     * @return contextpath
+     */
+    private String getContextPath(Trans tempTrans){
+        if(serviceContextPathConfigMap.containsKey(tempTrans.serviceName())){
+            return serviceContextPathConfigMap.get(tempTrans.serviceName());
+        }
+        return  StringUtil.isEmpty(tempTrans.serviceContextPath()) ? "" : tempTrans.serviceContextPath();
     }
 
     /**
@@ -92,13 +119,13 @@ public class RpcTransService extends SimpleTransService {
      * @return
      */
     public Object getUniqueKey(VO vo, Trans tempTrans) {
-        if(!isEnableCloud){
-            return super.getUniqueKey(vo,tempTrans);
+        if (!isEnableCloud) {
+            return super.getUniqueKey(vo, tempTrans);
         }
-        if (StringUtils.isEmpty(tempTrans.uniqueField())) {
+        if (StringUtil.isEmpty(tempTrans.uniqueField())) {
             return vo.getPkey();
         }
-        BasicVO basicVO = (BasicVO)vo;
+        BasicVO basicVO = (BasicVO) vo;
         return basicVO.getObjContentMap().get(tempTrans.uniqueField());
     }
 
@@ -110,8 +137,8 @@ public class RpcTransService extends SimpleTransService {
      * @return
      */
     protected Map<String, Object> createTempTransCacheMap(VO po, Trans trans) {
-        if(!isEnableCloud){
-            return super.createTempTransCacheMap(po,trans);
+        if (!isEnableCloud) {
+            return super.createTempTransCacheMap(po, trans);
         }
         String fielVal = null;
         Map<String, Object> tempCacheTransMap = new LinkedHashMap<>();
@@ -133,11 +160,12 @@ public class RpcTransService extends SimpleTransService {
 
     /**
      * 配置缓存
+     *
      * @param type
      * @param cacheSett
      */
-    public void setTransCache(Object type,TransCacheSett cacheSett){
-        this.transCacheSettMap.put(ConverterUtils.toString(type),cacheSett);
+    public void setTransCache(Object type, TransCacheSett cacheSett) {
+        this.transCacheSettMap.put(ConverterUtils.toString(type), cacheSett);
     }
 
     @Override

@@ -408,6 +408,7 @@ class SimpleTrans implements Trans {
 
     private String dataSource = "";
 
+
     public SimpleTrans(Trans anno) {
         this.anno = anno;
         Class<? extends com.fhs.core.trans.vo.TransPojo> clazz = (Class<? extends com.fhs.core.trans.vo.TransPojo>) anno.target();
@@ -461,6 +462,11 @@ class SimpleTrans implements Trans {
     @Override
     public String serviceName() {
         return anno.serviceName();
+    }
+
+    @Override
+    public String serviceContextPath() {
+        return anno.serviceContextPath();
     }
 
     @Override
