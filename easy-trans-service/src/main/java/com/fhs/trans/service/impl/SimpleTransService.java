@@ -88,7 +88,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     }
                 }
             } else {
-                transCache = new HashMap<>(1);
+                transCache = new LinkedHashMap<>(1);
                 tempTransCache = getTempTransCacheMap(tempTrans, ReflectUtils.getValue(obj, tempField.getName()));
                 if (tempTransCache == null || tempTransCache.isEmpty()) {
                     LOGGER.warn(this.getClass().getName() + "翻译未命中数据:" + tempTrans.target().getName() + "_" + ReflectUtils.getValue(obj, tempField.getName()));
