@@ -23,12 +23,6 @@ import java.util.*;
 public class JsonUtils {
     private static SerializeConfig mapping = new SerializeConfig();
 
-    private static String dateFormat;
-
-    static {
-        dateFormat = "yyyy-MM-dd HH:mm:ss";
-        mapping.put(Date.class, new SimpleDateFormatSerializer(dateFormat));
-    }
 
     /**
      * <把任意对象转换为json字符串 >

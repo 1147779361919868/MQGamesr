@@ -22,7 +22,7 @@
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>2.0.14</version>
+            <version>2.0.15</version>
         </dependency>
 ```
    Mybatis plus 扩展：
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-mybatis-plus-extend</artifactId>
-            <version>2.0.14</version>
+            <version>2.0.15</version>
         </dependency>
 ```
   JPA  扩展：
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-jpa-extend</artifactId>
-            <version>2.0.14</version>
+            <version>2.0.15</version>
         </dependency>
 ```
 Beetl SQL 扩展：
@@ -46,7 +46,7 @@ Beetl SQL 扩展：
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-beetl-sql-extend</artifactId>
-            <version>2.0.14</version>
+            <version>2.0.15</version>
         </dependency>
 ```
 TK Mybatis(通用mapper) 扩展：
@@ -54,7 +54,7 @@ TK Mybatis(通用mapper) 扩展：
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-tk-extend</artifactId>
-            <version>2.0.14</version>
+            <version>2.0.15</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
