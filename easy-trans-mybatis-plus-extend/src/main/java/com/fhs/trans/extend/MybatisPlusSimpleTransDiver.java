@@ -83,7 +83,7 @@ public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTra
                 targetFields.add(uniqueField);
             }
             queryWrapper.select(targetFields.stream().map(column -> {
-                return this.getColumn(targetClass, column);
+                return this.getColumn(targetClass, column) + " AS " + column;
             }).toArray(String[]::new));
         }
         return queryWrapper;
