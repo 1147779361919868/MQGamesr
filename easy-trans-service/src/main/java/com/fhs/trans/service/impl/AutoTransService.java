@@ -145,7 +145,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
     @Override
     public void transMore(List<? extends VO> objList, List<Field> toTransList) {
         threadLocalCache.set(new HashMap<>());
-        // 根据namespace区分
+        // 根据namespace 把字段分组
         Map<String, List<Field>> namespaceFieldsGroupMap = new HashMap<>();
         for (Field tempField : toTransList) {
             tempField.setAccessible(true);
