@@ -148,10 +148,10 @@ public interface ITransTypeService {
      */
     default void setRef(Trans trans, VO vo, String val) {
         if (CheckUtils.isNotEmpty(trans.ref())) {
-            ReflectUtils.setValue(vo, trans.ref(), val);
+            setValue(vo, trans.ref(), val);
         }
         if (CheckUtils.isNotEmpty(trans.refs())) {
-            Stream.of(trans.refs()).forEach(ref -> ReflectUtils.setValue(vo, ref, val));
+            Stream.of(trans.refs()).forEach(ref -> setValue(vo, ref, val));
         }
     }
 
@@ -196,15 +196,38 @@ public interface ITransTypeService {
         setRef(ref, vo, valMap, null);
     }
 
+    /**
+     * 设置值，带自动转换
+     *
+     * @param vo    vo
+     * @param ref   ref
+     * @param value 值
+     */
+    default void setValue(VO vo, String ref, Object value) {
+        Field field = ReflectUtils.getDeclaredField(vo.getClass(), ref);
+        if (value == null) {
+            return;
+        }
+        String valueStr = StringUtil.toString(value);
+        Class fieldType = field.getType();
+        // 如果字段类型不是String，则转换
+        if (fieldType == int.class || fieldType == Integer.class) {
+            ReflectUtils.setValue(vo, ref, Integer.valueOf(valueStr));
+        } else if (fieldType == long.class || fieldType == Long.class) {
+            ReflectUtils.setValue(vo, ref, Long.valueOf(valueStr));
+        } else {
+            ReflectUtils.setValue(vo, ref, valueStr);
+        }
+    }
 
     default void setRef(String ref, VO vo, Map<String, ?> valMap, Integer index) {
         if (index == null) {
             if (valMap.size() > 0) {
                 String key = valMap.keySet().iterator().next();
-                ReflectUtils.setValue(vo, ref, valMap.get(key));
+                setValue(vo, ref, valMap.get(key));
             }
         } else {
-            ReflectUtils.setValue(vo, ref, valMap.get(new ArrayList<>(valMap.keySet()).get(index)));
+            setValue(vo, ref, valMap.get(new ArrayList<>(valMap.keySet()).get(index)));
         }
     }
 
