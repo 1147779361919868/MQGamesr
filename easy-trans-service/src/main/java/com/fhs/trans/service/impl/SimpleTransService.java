@@ -108,7 +108,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     }
                 }
             }
-            if (tempTransCache != null && !isMany) {
+            if (tempTransCache != null) {
                 setRef(tempTrans, obj, transCache, (VO) targetObject);
             }
 
@@ -255,7 +255,11 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      */
     public VO findById(Object id, Trans tempTrans) {
         return findById(() -> {
-            return transDiver.findById((Serializable) id, tempTrans.target(), tempTrans.uniqueField(), new HashSet<>(Arrays.asList(tempTrans.fields())));
+            HashSet<String> fields = new HashSet<>(Arrays.asList(tempTrans.fields()));
+            if(transCacheSettMap.containsKey(getTargetClassName(tempTrans))){
+                fields = null;
+            }
+            return transDiver.findById((Serializable) id, tempTrans.target(), tempTrans.uniqueField(),fields);
         }, tempTrans.dataSource());
     }
 

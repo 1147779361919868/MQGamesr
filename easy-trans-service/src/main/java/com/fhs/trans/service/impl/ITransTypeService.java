@@ -234,13 +234,16 @@ public interface ITransTypeService {
             return;
         }
         String valueStr = StringUtil.toString(value);
+        if(StringUtil.isEmpty(valueStr)){
+            return;
+        }
         Class fieldType = field.getType();
         // 如果字段类型不是String，则转换
         if (fieldType == int.class || fieldType == Integer.class) {
             ReflectUtils.setValue(vo, ref, Integer.valueOf(valueStr));
         } else if (fieldType == long.class || fieldType == Long.class) {
             ReflectUtils.setValue(vo, ref, Long.valueOf(valueStr));
-        } else {
+        } else if(fieldType == String.class){
             ReflectUtils.setValue(vo, ref, valueStr);
         }
     }
