@@ -15,8 +15,9 @@ import java.util.stream.Collectors;
 
 /**
  * 字典二级缓存服务
- * @author wanglei
+ *
  * @param <T>
+ * @author wanglei
  */
 @Data
 public class BothCacheService<T> {
@@ -58,7 +59,7 @@ public class BothCacheService<T> {
      * @return value
      */
     public T get(String key) {
-        if(StringUtil.isEmpty(key)){
+        if (!StringUtil.isEmpty(key)) {
             if (localCacheMap.containsKey(key)) {
                 return localCacheMap.get(key);
             }
@@ -71,7 +72,7 @@ public class BothCacheService<T> {
             }
             return null;
         }
-      return null;
+        return null;
     }
 
     /**

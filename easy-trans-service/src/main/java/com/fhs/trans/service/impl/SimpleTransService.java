@@ -73,6 +73,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             pkey = pkey.replace("[", "").replace("]", "");
             Map<String, Object> tempTransCache = null;
             boolean isMany = false;
+            Object targetObject = null;
             if (pkey.contains(",")) {
                 isMany = true;
                 String[] pkeys = pkey.split(",");
@@ -99,14 +100,16 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     continue;
                 }
                 Map<String, String> finalTransCache = transCache;
-                tempTransCache.forEach((k, v) -> {
-                    if (!"targetObject".equals(k)) {
-                        finalTransCache.put(k, StringUtil.toString(v));
+                for (Map.Entry<String, Object> stringObjectEntry : tempTransCache.entrySet()) {
+                    if (!"targetObject".equals(stringObjectEntry.getKey())) {
+                        finalTransCache.put(stringObjectEntry.getKey(), StringUtil.toString(stringObjectEntry.getValue()));
+                    }else{
+                        targetObject = stringObjectEntry.getValue();
                     }
-                });
+                }
             }
             if (tempTransCache != null && !isMany) {
-                setRef(tempTrans, obj, transCache, (VO) tempTransCache.get("targetObject"));
+                setRef(tempTrans, obj, transCache, (VO) targetObject);
             }
 
             Map<String, String> transMap = obj.getTransMap();

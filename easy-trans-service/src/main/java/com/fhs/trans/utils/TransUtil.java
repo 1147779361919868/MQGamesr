@@ -93,8 +93,9 @@ public class TransUtil {
 
     /**
      * 合并需要翻译的对象到集合
-     * @param vo vo
-     * @param vos vos
+     *
+     * @param vo    vo
+     * @param vos   vos
      * @param voMap vomap
      */
     public static void mergeTransSubVo(VO vo, Collection<? extends VO> vos, Map<Class, List<? extends VO>> voMap) {
@@ -103,12 +104,12 @@ public class TransUtil {
             vo = vos.iterator().next();
         }
         hasVoList = voMap.containsKey(vo.getClass()) ? voMap.get(vo.getClass()) : new ArrayList<>();
-        if(vos!=null){
+        if (vos != null) {
             hasVoList.addAll(vos);
-        }else{
+        } else {
             hasVoList.add(vo);
         }
-        voMap.put(vo.getClass(),hasVoList);
+        voMap.put(vo.getClass(), hasVoList);
     }
 
     /**
@@ -191,10 +192,23 @@ public class TransUtil {
      * @param hasTransObjs
      */
     public static void transFields(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs
-            , Set<String> includeFields, Set<String> excludeFields) throws IllegalAccessException {
+            , Set<String> includeFields, Set<String> excludeFields) throws IllegalAccessException, InstantiationException {
         List<Field> fields = ReflectUtils.getAllField(object);
         Object tempObj = null;
         for (Field field : fields) {
+            // 此段代码适配beanSearcher SearchResult
+            if (java.lang.reflect.Modifier.isFinal(field.getModifiers())) {
+                field.setAccessible(true);
+                tempObj = field.get(object);
+                if (Objects.nonNull(tempObj) && tempObj instanceof List) {
+                    List tempList = (List) tempObj;
+                    if (Objects.nonNull(tempList.get(0)) && tempList.get(0) instanceof VO) {
+                        Collection transResult = transBatch(tempObj, transService, isProxy, hasTransObjs, includeFields, excludeFields);
+                        tempList.clear();
+                        tempList.addAll(transResult);
+                    }
+                }
+            }
             if (java.lang.reflect.Modifier.isFinal(field.getModifiers()) || java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
                 continue;
             }

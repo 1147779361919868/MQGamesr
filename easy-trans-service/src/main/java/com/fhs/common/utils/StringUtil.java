@@ -170,7 +170,6 @@ public class StringUtil {
         if (str == null || "".equals(str.trim())) {
             return true;
         }
-
         return false;
     }
 
