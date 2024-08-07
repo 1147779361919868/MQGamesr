@@ -7,6 +7,7 @@
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
+    <groupId>com.fhs-opensource</groupId>
     <url>https://gitee.com/fhs-opensource/easy_trans</url>
     <modelVersion>4.0.0</modelVersion>
     <version>1.0.0</version>
@@ -77,6 +78,7 @@
                         <skip>true</skip>
                     </configuration>
                 </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
@@ -99,6 +101,17 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.7</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -152,10 +165,6 @@
     </licenses>
 
     <developers>
-        <developer>
-            <name>LittleNewbie</name>
-            <email>svili@foxmail.com</email>
-        </developer>
         <developer>
             <name>jackwong</name>
             <email>921888199@qq.com</email>
