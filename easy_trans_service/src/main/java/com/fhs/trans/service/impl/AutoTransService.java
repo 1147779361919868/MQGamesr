@@ -96,7 +96,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             pkey = pkey.replace("[", "").replace("]", "");
             if (pkey.contains(",")) {
                 String[] pkeys = pkey.split(",");
-                transCache = new HashMap<>();
+                transCache = new LinkedHashMap<>();
                 Map<String, String> tempTransCache = null;
                 for (String tempPkey : pkeys) {
                     tempTransCache = getTempTransCacheMap(namespace,tempPkey);
@@ -116,6 +116,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                     continue;
                 }
             }
+            setRef(tempTrans,obj,transCache);
             if (!CheckUtils.isNullOrEmpty(alias)) {
                 Map<String, String> tempMap = new HashMap<>();
                 Set<String> keys = transCache.keySet();
@@ -126,6 +127,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             }
             Map<String, String> transMap = obj.getTransMap();
             Set<String> keys = transCache.keySet();
+
             for (String key : keys) {
                 if (CheckUtils.isNullOrEmpty(transMap.get(key))) {
                     transMap.put(key, transCache.get(key));

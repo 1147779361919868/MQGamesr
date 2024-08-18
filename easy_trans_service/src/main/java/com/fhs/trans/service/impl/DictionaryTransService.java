@@ -62,6 +62,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
                 }
             }
             obj.getTransMap().put(tempField.getName() + "Name",  dicCodeList.size()> Constant.ZERO? StringUtil.getStrForIn(dicCodeList,false):"");
+            setRef(tempTrans,obj,obj.getTransMap().get(tempField.getName() + "Name"));
         }
     }
 
