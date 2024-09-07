@@ -6,6 +6,7 @@
 关联字典，关联其他的表使用外键拿其他表的title/name 等等，为了更优雅的实现id变name/title 字典码变字典描述，easy trans横空出世，通过2个注解就能实现数据翻译，配合自己封装的一些baseService baseController，在配合一些代码生成器插件(比如EasyCode),可真正实现简单的CRUD不写一行代码的目标。
 
 先看效果：
+</br>
 ![enter description here](https://images.gitee.com/uploads/images/2020/0509/105618_248af047_339743.jpeg)
 
 easy trans适用于三种场景
@@ -27,14 +28,63 @@ easy trans的三种模式
 
 
 #### 安装教程
+1 、先把maven 引用加上
+``` xml
+       <dependency>
+            <groupId>com.fhs-opensource</groupId>
+            <artifactId>easy-trans-spring-boot-starter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+```
+2、如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
+``` xml
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+```
+3、在yaml中添加如下配置
+``` YAML
+easy-trans:
+   autotrans:
+       #您的service所在的包 支持通配符比如com.*.**.service.**，他的默认值是com.*.*.service.impl
+       package: com.fhs.test.service.** 
+	   #启用redis缓存
+   is-enable-redis: true
+  #yixi 
+spring:
+  redis:
+    host: 192.168.0.213
+    port: 6379
+    password: 123456
+    database: 0
+    timeout: 6000
+```
+4、如果不使用redis，请在启动类加禁用掉redis的自动配置类
+``` java
+@SpringBootApplication(exclude = { RedisAutoConfiguration.class })
+```
 
+#### 使用说明(请务必看完本段)
 
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1、字典翻译使用说明---直接上代码了，可以配合InitializingBean一起玩.</br>
+&nbsp;&nbsp;1.1 翻译缓存初始化
+``` java
+    @Autowired  //注入字典翻译服务
+    private  DictionaryTransService dictionaryTransService;
+	
+	   //在某处将字典缓存刷新到翻译服务中，以下是demo
+	    Map<String,String> transMap = new HashMap<>();
+        transMap.put("0","男");
+        transMap.put("1","女");
+        dictionaryTransService.refreshCache("sex",transMap);
+```
+&nbsp;&nbsp;1.2 字典翻译使用</br>
+``` java
+   //在对应的字段上 加此注解，type为TransType.DICTIONARY，key为字典分组码
+    @Trans(type = TransType.DICTIONARY,key = "sex")
+    private Integer sex;
+```
 
 #### 参与贡献
 
