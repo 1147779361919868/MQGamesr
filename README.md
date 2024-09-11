@@ -86,19 +86,141 @@ spring:
     private Integer sex;
 ```
 
+2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了，可以配合InitializingBean一起玩.</br>
+&nbsp;&nbsp;2.1 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口
+``` java
+@Service
+@AutoTrans(namespace = "teacher",fields = "name",defaultAlias = "teacher",useCache = true,useRedis = true)  //namespace = 表别名  fields = 哪些字段需要出现在翻译结果中这里写了name defaultAlias =默认别名，比如我这里有个name字段别的表也有个name字段，为了区分这里配置为teacher 在翻译结果中 就会出现teacherName 而不是name  useCache = 是否使用缓存  useRedis = 是否使用redis缓存
+public class TeacherService implements AutoTransAble {
+
+   //在不使用缓存的时候使用，如果transMore的时候会拼接teacherid集合，调用此方法获取id集合对应的teacher对象
+     public List<P> findByIds(List<?> ids) {
+	    //推荐使用JPA/Mybatis Plus的方法哦
+        return this.baseMapper.selectBatchIds(ids);
+    }
+ 
+ // 在开启缓存的时候，springboot启动完成后会拿所有数据放到缓存里
+    @Override
+    public List select() {
+      return  this.baseMapper.selectList((Wrapper)null)
+    }
+
+// 在不开启缓存的时候，transone会通过此方法获取翻译数据
+    @Override
+    public VO selectById(Object primaryValue) {
+       return this.baseMapper.selectById(primaryValue);
+    }
+```
+以上，建议在baseservice中添加以上几个方法，这样子service就不用每个都写了。
+
+&nbsp;&nbsp;2.2 Autotrans翻译使用</br>
+``` java
+     //指定翻译的namespace，和翻译类型为TransType.AUTO_TRANS
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher")
+    private String teacherId;
+   //如果有2个teacherid 可以通过namespace#别名  来起别名区分
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english")
+    private String englishteacherId;
+```
+3、POJO修改 a 实现vo接口(Teacher类也要实现哦)，提供一个transMap，框架会把翻译结果put到这个map中，建议使用basePOJO 的方法来实现
+
+``` java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Student implements VO {
+
+    private String studentName;
+
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher")
+    private String teacherId;
+
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english")
+    private String englishteacherId;
+
+    @Trans(type = TransType.DICTIONARY,key = "sex")
+    private Integer sex;
+
+    public Map<String,String> transMap = new HashMap<>();
+
+    @Override
+    public Map<String, String> getTransMap() {
+        return transMap;
+    }
+}
+
+```
+4、框架中没有使用JPA/Mybatis Plus怎么办
+
+``` java
+   //vo中有一个getPkey 方法默认是找@Id 或者 @TableId 标识的字段，如果没有使用JPA/Mybatis Plus 可重写此方法返回表主键的值比如 return this.id;
+
+    @JsonIgnore
+    @JSONField(serialize = false)
+     default Object getPkey(){
+         Field idField = getIdField(true);
+         try {
+             return idField.get(this);
+         } catch (IllegalAccessException e) {
+             return null;
+         }
+     }
+
+```
+5、准备工作已经完成，最后一步，使用翻译服务进行翻译
+``` java
+    @Autowired
+    private TransService transService;
+
+    @Test
+    public void transOne(){
+        Student student = new Student();
+        student.setStudentName("张三");
+        student.setTeacherId("1");
+        student.setEnglishteacherId("2");
+        student.setSex(1);
+		//翻译一个对象
+        transService.transOne(student);
+        System.out.println(JsonUtils.bean2json(student));
+    }
+
+
+    @Test
+    public void transMore(){
+        Student student = new Student();
+        student.setStudentName("张三");
+        student.setTeacherId("1");
+        student.setEnglishteacherId("2");
+        student.setSex(1);
+        List<Student> studentList = new ArrayList<>();
+        studentList.add(student);
+		//翻译多个对象
+        transService.transMore(studentList);
+        System.out.println(JsonUtils.list2json(studentList));
+    }
+```
+
+6、缓存刷新
+&nbsp;&nbsp;6.1 非集群模式下的缓存刷新
+调用AutoTransService的refreshCache(Map<String, Object> messageMap) 
+map中put一个namespace 为teacher的话，就代表刷新teacher的缓存，如果map中什么都不put代表刷新所有缓存。
+&nbsp;&nbsp;6.2 集群模式下的缓存刷新(必须开启redis支持才可以)
+``` java
+ @Autowired
+ private RedisCacheService redisCacheService;
+ Map<String, String> message = new HashMap();
+            message.put("transType", "auto");
+            message.put("namespace", "teacher");
+            this.redisCacheService.convertAndSend("trans", JsonUtils.map2json(message));
+```
+7、DEMO
+https://gitee.com/fhs-opensource/easy_trans_springboot_demo
+
 #### 参与贡献
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+1.  如果遇到使用问题可以加QQ群:976278956
 
+#### 写到最后
 
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+easy trans是从fhs framework剥离出来的项目，原来是作者一个快速开发平台里面的功能，考虑到很多公司都是用自己搭建的项目或者其他的快速开发平台，作者也想提供一种便利的方式让此功能集成到其他的现有平台中，方作出决定进行剥离，有任何想法都可以加群联系。
