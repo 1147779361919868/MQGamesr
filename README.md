@@ -6,7 +6,7 @@
 关联字典，关联其他的表使用外键拿其他表的title/name 等等，为了更优雅的实现id变name/title 字典码变字典描述，easy trans横空出世，通过2个注解就能实现数据翻译，配合自己封装的一些baseService baseController，在配合一些代码生成器插件(比如EasyCode),可真正实现简单的CRUD不写一行代码的目标。
 
 先看效果：
-</br>
+</br><br/>
 ![enter description here](https://images.gitee.com/uploads/images/2020/0509/105618_248af047_339743.jpeg)
 
 easy trans适用于三种场景
