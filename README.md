@@ -67,8 +67,8 @@ spring:
 
 #### 使用说明(请务必看完本段)
 
-1、字典翻译使用说明---直接上代码了，可以配合InitializingBean一起玩.</br>
-&nbsp;&nbsp;1.1 翻译缓存初始化
+1、字典翻译使用说明---直接上代码了，可以配合InitializingBean一起玩.<br/>
+&nbsp;&nbsp;1.1 翻译缓存初始化<br/>
 ``` java
     @Autowired  //注入字典翻译服务
     private  DictionaryTransService dictionaryTransService;
@@ -79,15 +79,15 @@ spring:
         transMap.put("1","女");
         dictionaryTransService.refreshCache("sex",transMap);
 ```
-&nbsp;&nbsp;1.2 字典翻译使用</br>
+&nbsp;&nbsp;1.2 字典翻译使用<br/>
 ``` java
    //在对应的字段上 加此注解，type为TransType.DICTIONARY，key为字典分组码
     @Trans(type = TransType.DICTIONARY,key = "sex")
     private Integer sex;
 ```
 
-2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了，可以配合InitializingBean一起玩.</br>
-&nbsp;&nbsp;2.1 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口
+2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了，可以配合InitializingBean一起玩.<br/>
+&nbsp;&nbsp;2.1 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口<br/>
 ``` java
 @Service
 @AutoTrans(namespace = "teacher",fields = "name",defaultAlias = "teacher",useCache = true,useRedis = true)  //namespace = 表别名  fields = 哪些字段需要出现在翻译结果中这里写了name defaultAlias =默认别名，比如我这里有个name字段别的表也有个name字段，为了区分这里配置为teacher 在翻译结果中 就会出现teacherName 而不是name  useCache = 是否使用缓存  useRedis = 是否使用redis缓存
