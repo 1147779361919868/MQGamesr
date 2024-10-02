@@ -201,11 +201,11 @@ public class Student implements VO {
     }
 ```
 
-6、缓存刷新
-&nbsp;&nbsp;6.1 非集群模式下的缓存刷新
-调用AutoTransService的refreshCache(Map<String, Object> messageMap) 
-map中put一个namespace 为teacher的话，就代表刷新teacher的缓存，如果map中什么都不put代表刷新所有缓存。
-&nbsp;&nbsp;6.2 集群模式下的缓存刷新(必须开启redis支持才可以)
+6、缓存刷新<br/>
+&nbsp;&nbsp;6.1 非集群模式下的缓存刷新<br/>
+调用AutoTransService的refreshCache(Map<String, Object> messageMap) <br/>
+map中put一个namespace 为teacher的话，就代表刷新teacher的缓存，如果map中什么都不put代表刷新所有缓存。<br/>
+&nbsp;&nbsp;6.2 集群模式下的缓存刷新(必须开启redis支持才可以)<br/>
 ``` java
  @Autowired
  private RedisCacheService redisCacheService;
