@@ -223,4 +223,4 @@ https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 
 #### 写到最后
 
-easy trans是从fhs framework剥离出来的项目，原来是作者一个快速开发平台里面的功能，考虑到很多公司都是用自己搭建的项目或者其他的快速开发平台，作者也想提供一种便利的方式让此功能集成到其他的现有平台中，方作出决定进行剥离，有任何想法都可以加群联系。
+教程看起来挺麻烦，只需要做2处封装，使用起来就很简单了，第一就是baseserivce的封装(主要提供那三个获取翻译数据的方法 和 缓存刷新的方法)，第二就是base pojo的封装(主要是getTransMap 给翻译服务返回一个hashmap用来装填数据用)，作者已经和ruoyi guns 做好了对接，需要资料什么的可以直接加群联系作者。
