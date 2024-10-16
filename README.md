@@ -7,7 +7,8 @@
 
 先看效果：
 <br/>
-![enter description here](https://images.gitee.com/uploads/images/2020/0509/105618_248af047_339743.jpeg)
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0312/115602_1ef91e89_339743.png "屏幕截图.png")
+
 
 easy trans适用于三种场景<br/>
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想做表关联查询<br/>
