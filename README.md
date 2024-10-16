@@ -7,7 +7,7 @@
 
 先看效果：
 <br/>
-![输入图片说明](https://images.gitee.com/uploads/images/2021/0312/115602_1ef91e89_339743.png "屏幕截图.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0312/115718_815360f3_339743.png "屏幕截图.png")
 
 
 easy trans适用于三种场景<br/>
