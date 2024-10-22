@@ -82,9 +82,11 @@ spring:
 ```
 &nbsp;&nbsp;1.2 字典翻译使用<br/>
 ``` java
-   //在对应的字段上 加此注解，type为TransType.DICTIONARY，key为字典分组码
-    @Trans(type = TransType.DICTIONARY,key = "sex")
+   //在对应的字段上 加此注解，type为TransType.DICTIONARY，key为字典分组码，ref为选填，如果设置了则会自动将翻译结果设置到此字段上
+     @Trans(type = TransType.DICTIONARY,key = "sex",ref = "sexName")
     private Integer sex;
+
+    private String sexName;
 ```
 
 2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了，可以配合InitializingBean一起玩.<br/>
@@ -122,6 +124,18 @@ public class TeacherService implements AutoTransAble {
    //如果有2个teacherid 可以通过namespace#别名  来起别名区分
     @Trans(type = TransType.AUTO_TRANS,key = "teacher#english")
     private String englishteacherId;
+
+    //同样支持ref ，将字翻译结果赋值到某个字段上
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher",ref = "teacherName")
+    private String teacherId;
+
+    private String teacherName;
+
+    //如果teacher 对外开放了多个字段当做翻译结果，比如 name和age，我这里只要age  ref可以同如下写法
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english",ref = "engTeacherAge#age")
+    private String englishteacherId;
+
+    private String engTeacherAge;
 ```
 3、POJO修改 a 实现vo接口(Teacher类也要实现哦)，提供一个transMap，框架会把翻译结果put到这个map中，建议使用basePOJO 的方法来实现
 
