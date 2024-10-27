@@ -34,7 +34,7 @@ easy trans的三种模式<br/>
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 ```
 2、如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
