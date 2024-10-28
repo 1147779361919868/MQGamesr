@@ -111,6 +111,10 @@
 
         <resources>
             <resource>
+                <directory>${project.basedir}/src/main/resources/META-INF</directory>
+                <targetPath>META-INF</targetPath>
+            </resource>
+            <resource>
                 <directory>${project.basedir}</directory>
                 <targetPath>META-INF</targetPath>
                 <includes>

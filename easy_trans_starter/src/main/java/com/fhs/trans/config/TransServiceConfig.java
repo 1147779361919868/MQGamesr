@@ -3,6 +3,7 @@ package com.fhs.trans.config;
 import com.fhs.cache.service.RedisCacheService;
 import com.fhs.cache.service.impl.RedisCacheServiceImpl;
 import com.fhs.common.spring.SpringContextUtil;
+import com.fhs.trans.aop.TransMethodResultAop;
 import com.fhs.trans.listener.TransMessageListener;
 import com.fhs.trans.service.impl.AutoTransService;
 import com.fhs.trans.service.impl.DictionaryTransService;
@@ -10,10 +11,7 @@ import com.fhs.trans.service.impl.TransService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -72,6 +70,15 @@ public class TransServiceConfig {
         AutoTransService autoTransService = new AutoTransService();
         autoTransService.setPackageNames(packageNames);
         return new DictionaryTransService();
+    }
+
+    /**
+     * 自动翻译方法结果aop
+     * @return
+     */
+    @Bean
+    public TransMethodResultAop transMethodResultAop(){
+        return new TransMethodResultAop();
     }
 
     @Bean
