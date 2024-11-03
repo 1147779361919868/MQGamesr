@@ -10,7 +10,7 @@
     <groupId>com.fhs-opensource</groupId>
     <url>https://gitee.com/fhs-opensource/easy_trans</url>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <artifactId>easy-trans-spring-boot-starter</artifactId>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
