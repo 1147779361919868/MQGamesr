@@ -29,7 +29,9 @@ public interface VO {
      * 获取翻译map
      * @return  翻译map
      */
-    Map<String,String> getTransMap();
+    default Map<String,String> getTransMap(){
+        return new HashMap<>();
+    }
 
     /**
      * 获取主键
