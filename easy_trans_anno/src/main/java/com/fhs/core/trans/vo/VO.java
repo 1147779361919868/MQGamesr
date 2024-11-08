@@ -30,7 +30,7 @@ public interface VO {
      * @return  翻译map
      */
     default Map<String,String> getTransMap(){
-        return new HashMap<>();
+        return null;
     }
 
     /**

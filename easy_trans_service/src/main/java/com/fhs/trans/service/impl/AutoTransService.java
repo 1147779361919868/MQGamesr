@@ -23,6 +23,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -99,7 +100,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                 transCache = new LinkedHashMap<>();
                 Map<String, String> tempTransCache = null;
                 for (String tempPkey : pkeys) {
-                    tempTransCache = getTempTransCacheMap(namespace,tempPkey);
+                    tempTransCache = getTempTransCacheMap(namespace, tempPkey);
                     if (tempTransCache == null) {
                         LOGGER.error("auto trans缓存未命中:" + namespace + "_" + tempPkey);
                         continue;
@@ -116,7 +117,11 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                     continue;
                 }
             }
-            setRef(tempTrans,obj,transCache);
+            setRef(tempTrans, obj, transCache);
+            Map<String, String> transMap = obj.getTransMap();
+            if (transMap == null) {
+                continue;
+            }
             if (!CheckUtils.isNullOrEmpty(alias)) {
                 Map<String, String> tempMap = new HashMap<>();
                 Set<String> keys = transCache.keySet();
@@ -125,7 +130,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                 }
                 transCache = tempMap;
             }
-            Map<String, String> transMap = obj.getTransMap();
+
             Set<String> keys = transCache.keySet();
 
             for (String key : keys) {
@@ -160,14 +165,14 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             objList.forEach(obj -> {
                 try {
                     Object tempId = tempField.get(obj);
-                    if(CheckUtils.isNotEmpty(tempId)){
+                    if (CheckUtils.isNotEmpty(tempId)) {
                         ids.add(tempId);
                     }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
             });
-            if(!ids.isEmpty()){
+            if (!ids.isEmpty()) {
                 List<VO> dbDatas = baseServiceMap.get(namespace).findByIds(new ArrayList<>(ids));
                 for (VO vo : dbDatas) {
                     threadLocalCache.get().put(namespace + "_" + vo.getPkey(), createTempTransCacheMap(vo, autoTransSett));
@@ -204,7 +209,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                 this.transSettMap.put(autoTransSett.namespace(), autoTransSett);
             }
         }
-        new Thread(()->{
+        new Thread(() -> {
             Thread.currentThread().setName("refresh auto trans cache");
             refreshCache(new HashMap<>());
         }).start();
@@ -264,15 +269,15 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             po = vos.get(i);
             pkeyVal = po.getPkey();
             localTransCacheMap.put(namespace + "_" + pkeyVal, createTempTransCacheMap(po, autoTrans));
-            if(autoTrans.useCache() && autoTrans.useRedis()){
+            if (autoTrans.useCache() && autoTrans.useRedis()) {
                 this.getRedisTransCache().put(namespace + "_" + pkeyVal, createTempTransCacheMap(po, autoTrans));
             }
         }
         LOGGER.info("刷新auto-trans缓存完成:" + namespace);
     }
 
-    public RedisCacheService<Map<String, String>> getRedisTransCache(){
-        if(this.redisTransCache==null){
+    public RedisCacheService<Map<String, String>> getRedisTransCache() {
+        if (this.redisTransCache == null) {
             throw new IllegalArgumentException("请确定开启了easy-tran.is-enable-redis 为true，springBoot启动已经完成");
         }
         return this.redisTransCache;
@@ -288,7 +293,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
     private Map<String, String> createTempTransCacheMap(Object po, AutoTrans autoTrans) {
         String fielVal = null;
         Map<String, String> tempCacheTransMap = new LinkedHashMap<>();
-        if(po==null){
+        if (po == null) {
             return tempCacheTransMap;
         }
         for (String field : autoTrans.fields()) {
@@ -323,14 +328,14 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
         } else {
             if (autoTrans == null) {
                 LOGGER.warn("namespace对应的service没有使用autotrans注解标记:" + namespace);
-                return  new HashMap<>();
+                return new HashMap<>();
             }
             //如果强调使用缓存,则可能是还没刷新进来,直接返回空map,前端在刷新一下就好了
             if (autoTrans.useCache()) {
                 return new HashMap<>();
             }
             if (this.threadLocalCache.get() == null) {
-                if(CheckUtils.isNullOrEmpty(pkey)){
+                if (CheckUtils.isNullOrEmpty(pkey)) {
                     return new HashMap<>();
                 }
                 VO vo = this.baseServiceMap.get(namespace).selectById(pkey);
