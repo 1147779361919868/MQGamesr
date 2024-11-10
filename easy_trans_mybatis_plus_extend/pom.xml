@@ -7,11 +7,11 @@
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>easy_trans_mybatis_plus_extend</artifactId>
+    <version>1.0.2</version>
     <groupId>com.fhs-opensource</groupId>
     <url>https://gitee.com/fhs-opensource/easy_trans</url>
-    <modelVersion>4.0.0</modelVersion>
-    <version>1.0.2</version>
-    <artifactId>easy-trans-spring-boot-starter</artifactId>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -21,7 +21,9 @@
         <fhs.mp-anno.version>3.4.0</fhs.mp-anno.version>
         <fhs.springboot.version>2.2.5.RELEASE</fhs.springboot.version>
         <fhs.spring.version>5.2.6.RELEASE</fhs.spring.version>
+        <fhs.mp.version>3.4.0</fhs.mp.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.fhs-opensource</groupId>
@@ -39,7 +41,19 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
             <version>${fhs.springboot.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-core</artifactId>
+            <version>${fhs.mp.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-extension</artifactId>
+            <version>${fhs.mp.version}</version>
+        </dependency>
     </dependencies>
+
     <build>
         <pluginManagement>
             <plugins>

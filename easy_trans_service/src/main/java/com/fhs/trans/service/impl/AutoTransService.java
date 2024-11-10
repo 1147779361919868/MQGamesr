@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 本接类使用需要配合Autotrans 注解和autoTransAble的实现类
@@ -65,7 +66,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
     /**
      * 配置
      */
-    private Map<String, AutoTrans> transSettMap = new HashMap<>();
+    private Map<String, AutoTrans> transSettMap = new ConcurrentHashMap<>();
 
     /**
      * 如果直接去表里查询，放到这个cache中
@@ -201,7 +202,6 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                 // 获取该类
                 Object baseService = SpringContextUtil.getBeanByClass(entity);
                 if (!(baseService instanceof AutoTransAble)) {
-                    LOGGER.warn("AutoTrans 只能用到实现AutoTransAble的类上,不能用到:" + baseService.getClass());
                     continue;
                 }
                 AutoTrans autoTransSett = entity.getAnnotation(AutoTrans.class);
@@ -399,6 +399,11 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
 
     public void setRedisTransCache(RedisCacheService<Map<String, String>> redisTransCache) {
         this.redisTransCache = redisTransCache;
+    }
+
+    public void regTransable(AutoTransAble transAble,AutoTrans autoTransSett){
+        this.baseServiceMap.put(autoTransSett.namespace(),transAble);
+        this.transSettMap.put(autoTransSett.namespace(), autoTransSett);
     }
 }
 

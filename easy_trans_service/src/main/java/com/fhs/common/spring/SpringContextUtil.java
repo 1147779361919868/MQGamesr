@@ -221,7 +221,6 @@ public class SpringContextUtil implements ApplicationContextAware {
                 types = ((ParameterizedType) object.getClass().getSuperclass().getGenericSuperclass()).getActualTypeArguments();
             } else {
                 types = ((ParameterizedType) object.getClass().getGenericSuperclass()).getActualTypeArguments();
-
             }
             boolean isThisObj = true;
             for (int i = 0; i < actualTypeArguments.length; i++) {

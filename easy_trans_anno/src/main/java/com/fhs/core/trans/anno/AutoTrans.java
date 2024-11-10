@@ -1,5 +1,7 @@
 package com.fhs.core.trans.anno;
 
+import com.fhs.core.trans.vo.VO;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -43,4 +45,10 @@ public @interface AutoTrans
      * @return
      */
     String defaultAlias() default "";
+
+    /**
+     * 关联的类
+     * @return
+     */
+    Class<? extends VO> ref() default VO.class;
 }
