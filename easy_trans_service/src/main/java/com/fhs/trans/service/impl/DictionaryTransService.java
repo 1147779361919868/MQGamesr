@@ -29,16 +29,17 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
     /**
      * 用来放字典缓存的map
      */
-    private  Map<String, String> dictionaryTransMap = new ConcurrentHashMap<>();
+    private Map<String, String> dictionaryTransMap = new ConcurrentHashMap<>();
 
     /**
      * 刷新缓存
+     *
      * @param dicTypeCode 字典类型编码
-     * @param dicMap 字典map
+     * @param dicMap      字典map
      */
-    public  void refreshCache(String dicTypeCode,Map<String,String> dicMap){
-        dicMap.keySet().forEach(key->{
-            dictionaryTransMap.put(dicTypeCode + "_" + key,dicMap.get(key));
+    public void refreshCache(String dicTypeCode, Map<String, String> dicMap) {
+        dicMap.keySet().forEach(key -> {
+            dictionaryTransMap.put(dicTypeCode + "_" + key, dicMap.get(key));
         });
 
     }
@@ -57,14 +58,15 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             //sex_0/1  男 女
             List<String> dicCodeList = new ArrayList<>();
             for (String dicCode : dicCodeArray) {
-                if (!StringUtil.isEmpty(dicCode)){
+                if (!StringUtil.isEmpty(dicCode)) {
                     dicCodeList.add(dictionaryTransMap.get(key + "_" + dicCode));
                 }
             }
-            if(obj.getTransMap()!=null){
-                obj.getTransMap().put(tempField.getName() + "Name",  dicCodeList.size()> Constant.ZERO? StringUtil.getStrForIn(dicCodeList,false):"");
+            String transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
+            if (obj.getTransMap() != null) {
+                obj.getTransMap().put(tempField.getName() + "Name", transResult);
             }
-            setRef(tempTrans,obj,obj.getTransMap().get(tempField.getName() + "Name"));
+            setRef(tempTrans, obj, transResult);
         }
     }
 
