@@ -7,7 +7,7 @@
 
 先看效果：
 <br/>
-![输入图片说明](https://images.gitee.com/uploads/images/2021/0312/115718_815360f3_339743.png "屏幕截图.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0414/164655_849689bc_339743.jpeg "宣传图_看图王.jpg")
 
 
 easy trans适用于三种场景<br/>
@@ -37,6 +37,15 @@ easy trans的三种模式<br/>
             <version>1.0.1</version>
         </dependency>
 ```
+   Mybatis plus用户另外还需要加以下扩展：
+``` xml
+        <dependency>
+            <groupId>com.fhs-opensource</groupId>
+            <artifactId>easy_trans_mybatis_plus_extend</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+```
+
 2、如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
 ``` xml
         <dependency>
@@ -53,7 +62,7 @@ easy-trans:
 	   #启用redis缓存
    is-enable-redis: true
   #yixi 
-spring:
+spring:#如果用到redis配置redis连接
   redis:
     host: 192.168.0.213
     port: 6379
@@ -83,17 +92,28 @@ spring:
 &nbsp;&nbsp;1.2 字典翻译使用<br/>
 ``` java
    //在对应的字段上 加此注解，type为TransType.DICTIONARY，key为字典分组码，ref为选填，如果设置了则会自动将翻译结果设置到此字段上
-     @Trans(type = TransType.DICTIONARY,key = "sex",ref = "sexName")
+    @Trans(type = TransType.DICTIONARY,key = "sex",ref = "sexName")
     private Integer sex;
 
     private String sexName;
 ```
 
-2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了，可以配合InitializingBean一起玩.<br/>
-&nbsp;&nbsp;2.1 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口<br/>
+2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了<br/>
+&nbsp;&nbsp;2.1.1 Mybatis plus用户 使用AutoTrans(不是Mybatis plus的请直接看2.1.2 是MP的可以跳过2.1.2)<br/>
+``` java
+    //mp用户需要设置ref设置po 的class但是不需要实现AutoTransAble接口
+    @AutoTrans(namespace = "usermp",fields = "name",
+        defaultAlias = "user",ref = UserMp.class)
+	public interface UserMapperMp extends BaseMapper<UserMp> {
+	}
+```
+
+
+&nbsp;&nbsp;2.1.2 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口<br/>
 ``` java
 @Service
-@AutoTrans(namespace = "teacher",fields = "name",defaultAlias = "teacher",useCache = true,useRedis = true)  //namespace = 表别名  fields = 哪些字段需要出现在翻译结果中这里写了name defaultAlias =默认别名，比如我这里有个name字段别的表也有个name字段，为了区分这里配置为teacher 在翻译结果中 就会出现teacherName 而不是name  useCache = 是否使用缓存  useRedis = 是否使用redis缓存
+@AutoTrans(namespace = "teacher",fields = "name",defaultAlias = "teacher",useCache = true,useRedis = true)  
+//namespace = 表别名  fields = 哪些字段需要出现在翻译结果中这里写了name defaultAlias =默认别名，比如我这里有个name字段别的表也有个name字段，为了区分这里配置为teacher 在翻译结果中 就会出现teacherName 而不是name  useCache = 是否使用缓存  useRedis = 是否使用redis缓存
 public class TeacherService implements AutoTransAble {
 
    //在不使用缓存的时候使用，如果transMore的时候会拼接teacherid集合，调用此方法获取id集合对应的teacher对象
@@ -137,39 +157,44 @@ public class TeacherService implements AutoTransAble {
 
     private String engTeacherAge;
 ```
-3、POJO修改 a 实现vo接口(Teacher类也要实现哦)，提供一个transMap，框架会把翻译结果put到这个map中，建议使用basePOJO 的方法来实现
+3、POJO修改 a 实现TransPojo接口(Teacher类也要实现哦)，提供一个transMap(可选)，框架会把翻译结果put到这个map中，建议使用basePOJO 的方法来实现
 
 ``` java
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Student implements VO {
+public class Student implements TransPojo {
 
     private String studentName;
 
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher")
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher",ref = "teacherName")
     private String teacherId;
 
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english")
+    private String teacherName;
+
+
+    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english",ref = "engTeacherAge#age")
     private String englishteacherId;
 
-    @Trans(type = TransType.DICTIONARY,key = "sex")
+    private String engTeacherAge;
+
+    @Trans(type = TransType.DICTIONARY,key = "sex",ref = "sexName")
     private Integer sex;
 
+    private String sexName;
+
+    //transMap是可选的，加了就会把所有的翻译结果都扔到这里，可以偷懒不定义那么多字段了，@Trans注解也就可以不写ref属性了
     public Map<String,String> transMap = new HashMap<>();
 
-    @Override
-    public Map<String, String> getTransMap() {
-        return transMap;
-    }
+    
 }
 
 ```
 4、框架中没有使用JPA/Mybatis Plus怎么办
 
 ``` java
-   //vo中有一个getPkey 方法默认是找@Id 或者 @TableId 标识的字段，如果没有使用JPA/Mybatis Plus 可重写此方法返回表主键的值比如 return this.id;
+   //TransPojo中有一个getPkey 方法默认是找@Id 或者 @TableId 标识的字段，如果没有使用JPA/Mybatis Plus 可重写此方法返回表主键的值比如 return this.id;
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -214,11 +239,22 @@ public class Student implements VO {
         transService.transMore(studentList);
         System.out.println(JsonUtils.list2json(studentList));
     }
+	
+	@TransMethodResult //加了注解就可以不用手动调用transService的方法了
+    public Student getStudent(){
+        Student student = new Student();
+        student.setStudentName("张三");
+        student.setTeacherId("1");
+        student.setFriendUserId("1");
+        student.setEnglishteacherId("2");
+        student.setSex(1);
+        return student;
+    }
 ```
 
 6、缓存刷新<br/>
 &nbsp;&nbsp;6.1 非集群模式下的缓存刷新<br/>
-调用AutoTransService的refreshCache(Map<String, Object> messageMap) <br/>
+调用AutoTransService的refreshOneNamespace(String namespace) <br/>
 map中put一个namespace 为teacher的话，就代表刷新teacher的缓存，如果map中什么都不put代表刷新所有缓存。<br/>
 &nbsp;&nbsp;6.2 集群模式下的缓存刷新(必须开启redis支持才可以)<br/>
 ``` java
