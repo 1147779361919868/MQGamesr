@@ -34,7 +34,7 @@ easy trans的三种模式<br/>
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -42,7 +42,7 @@ easy trans的三种模式<br/>
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </dependency>
 ```
 

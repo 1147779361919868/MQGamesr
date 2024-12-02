@@ -7,49 +7,50 @@
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>easy_trans_mybatis_plus_extend</artifactId>
+    <version>1.0.2</version>
     <groupId>com.fhs-opensource</groupId>
     <url>https://gitee.com/fhs-opensource/easy_trans</url>
-    <modelVersion>4.0.0</modelVersion>
-    <version>1.0.3</version>
-    <artifactId>easy_trans_service</artifactId>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <fhs.servlet-api.version>3.1.0</fhs.servlet-api.version>
-        <fhs.release.version>1.0.3</fhs.release.version>
+        <fhs.release.version>1.0.2</fhs.release.version>
         <fhs.mp-anno.version>3.4.0</fhs.mp-anno.version>
         <fhs.springboot.version>2.2.5.RELEASE</fhs.springboot.version>
         <fhs.spring.version>5.2.6.RELEASE</fhs.spring.version>
+        <fhs.mp.version>3.4.0</fhs.mp.version>
     </properties>
+
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-            <version>${fhs.springboot.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-redis</artifactId>
-            <version>${fhs.springboot.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.3</version>
-        </dependency>
-        <dependency>
             <groupId>com.fhs-opensource</groupId>
-            <artifactId>easy_trans_anno</artifactId>
+            <artifactId>easy_trans_service</artifactId>
             <version>${fhs.release.version}</version>
         </dependency>
-        <!--aop支持-->
         <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-            <version>1.9.5</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${fhs.spring.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${fhs.springboot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-core</artifactId>
+            <version>${fhs.mp.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-extension</artifactId>
+            <version>${fhs.mp.version}</version>
         </dependency>
     </dependencies>
 
@@ -123,6 +124,10 @@
         </plugins>
 
         <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources/META-INF</directory>
+                <targetPath>META-INF</targetPath>
+            </resource>
             <resource>
                 <directory>${project.basedir}</directory>
                 <targetPath>META-INF</targetPath>

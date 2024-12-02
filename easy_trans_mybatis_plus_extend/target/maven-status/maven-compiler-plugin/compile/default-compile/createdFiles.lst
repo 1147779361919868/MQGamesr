@@ -1,0 +1,3 @@
+com\fhs\trans\extend\MybatisPlusTransableAdapter.class
+com\fhs\trans\config\EasyTransMybatisPlusConfig.class
+com\fhs\trans\extend\MybatisPlusTransableRegister.class
