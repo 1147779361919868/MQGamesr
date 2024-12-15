@@ -24,9 +24,12 @@ public class MybatisPlusTransableAdapter implements AutoTransAble {
 
     @Override
     public List findByIds(List ids) {
+
+        Map<String, Object> map = CollectionUtils.newHashMapWithExpectedSize(1);
+        map.put("coll", ids);
         SqlSession sqlSession = this.sqlSession();
         try {
-           return sqlSession.selectList(this.sqlStatement(SqlMethod.SELECT_BATCH_BY_IDS), ids);
+           return sqlSession.selectList(this.sqlStatement(SqlMethod.SELECT_BATCH_BY_IDS), map);
         } finally {
             this.closeSqlSession(sqlSession);
         }

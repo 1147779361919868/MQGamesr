@@ -13,6 +13,7 @@
         <module>easy_trans_service</module>
         <module>easy_trans_starter</module>
         <module>easy_trans_mybatis_plus_extend</module>
+        <module>easy_trans_jpa_extend</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
