@@ -7,9 +7,13 @@ import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.AutoTransAble;
 import com.fhs.trans.service.impl.AutoTransService;
 import lombok.Data;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -18,7 +22,7 @@ import java.util.Set;
  * 用来注册
  */
 @Data
-public class MybatisPlusTransableRegister implements ApplicationListener<ApplicationReadyEvent> {
+public class JPATransableRegister implements ApplicationListener<ApplicationReadyEvent> {
 
     /**
      * service的包路径
@@ -27,6 +31,10 @@ public class MybatisPlusTransableRegister implements ApplicationListener<Applica
 
     @Autowired
     private AutoTransService autoTransService;
+
+
+    @Autowired
+    private EntityManager em;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
@@ -37,7 +45,7 @@ public class MybatisPlusTransableRegister implements ApplicationListener<Applica
             final  List<String> namespaceList = new ArrayList<>();
             for (Class<?> entity : entitySet) {
                 AutoTrans autoTransSett = entity.getAnnotation(AutoTrans.class);
-                if(autoTransSett.ref()== VO.class || (!autoTransSett.ref().isAnnotationPresent(TableName.class))){
+                if(autoTransSett.ref()== VO.class || (!autoTransSett.ref().isAnnotationPresent(Entity.class))){
                     continue;
                 }
                 // 获取该类
@@ -46,7 +54,7 @@ public class MybatisPlusTransableRegister implements ApplicationListener<Applica
                     continue;
                 }
                 namespaceList.add(autoTransSett.namespace());
-                autoTransService.regTransable(new MybatisPlusTransableAdapter(autoTransSett.ref()),autoTransSett);
+                autoTransService.regTransable(new JPATransableAdapter(autoTransSett.ref(),em),autoTransSett);
             }
             new Thread(() -> {
                 Thread.currentThread().setName("refresh auto trans cache");

@@ -1,7 +1,9 @@
 package com.fhs.trans.config;
 
+import com.fhs.trans.extend.JPATransableRegister;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -18,5 +20,11 @@ public class EasyTransJPAConfig {
     @Value("${easy-trans.autotrans.package:com.*.*.service.impl}")
     private String packageNames;
 
+    @Bean
+    public JPATransableRegister jpaTransableRegister(){
+        JPATransableRegister result = new JPATransableRegister();
+        result.setPackageNames(packageNames);
+        return result;
+    }
 
 }
