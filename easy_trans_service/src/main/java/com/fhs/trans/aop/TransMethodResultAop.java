@@ -149,6 +149,10 @@ public class TransMethodResultAop {
             }
         }
         //不支持数组 基础数据类型和内部类
+        if (className.contains("<")  ) {
+            className = className.substring(0, className.indexOf("<"));
+        }
+        //不支持数组 基础数据类型和内部类
         if (className.contains("/") ||
                 (Character.isLowerCase(className.charAt(0)) && (!className.contains(".")))
                 || className.contains("$") ) {
