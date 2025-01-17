@@ -34,7 +34,7 @@ easy trans的三种模式<br/>
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -42,10 +42,17 @@ easy trans的三种模式<br/>
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
         </dependency>
 ```
-
+  JPA 用户另外还需要加以下扩展：
+``` xml
+        <dependency>
+            <groupId>com.fhs-opensource</groupId>
+            <artifactId>easy_trans_jpa_extend</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+```
 2、如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
 ``` xml
         <dependency>
@@ -99,7 +106,7 @@ spring:#如果用到redis配置redis连接
 ```
 
 2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了<br/>
-&nbsp;&nbsp;2.1.1 Mybatis plus用户 使用AutoTrans(不是Mybatis plus的请直接看2.1.2 是MP的可以跳过2.1.2)<br/>
+&nbsp;&nbsp;2.1.1 Mybatis plus用户 使用AutoTrans(不是Mybatis plus的请直接看2.1.3 是MP的可以跳过2.1.3)<br/>
 ``` java
     //mp用户需要设置ref设置po 的class但是不需要实现AutoTransAble接口
     @AutoTrans(namespace = "usermp",fields = "name",
@@ -107,9 +114,15 @@ spring:#如果用到redis配置redis连接
 	public interface UserMapperMp extends BaseMapper<UserMp> {
 	}
 ```
+&nbsp;&nbsp;2.1.2 SpringDataJPA用户 使用AutoTrans<br/>
+``` java
+    @Repository
+    @AutoTrans(namespace = "school",useCache = true,fields = "schoolName",ref = School.class)
+    public interface SchoolRepository extends JpaRepository<School,String> {
+    }
+```
 
-
-&nbsp;&nbsp;2.1.2 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口<br/>
+&nbsp;&nbsp;2.1.3 如果不是用jpa/mybatis plus的话需要在 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口<br/>
 ``` java
 @Service
 @AutoTrans(namespace = "teacher",fields = "name",defaultAlias = "teacher",useCache = true,useRedis = true)  
