@@ -167,7 +167,15 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                 try {
                     Object tempId = tempField.get(obj);
                     if (CheckUtils.isNotEmpty(tempId)) {
-                        ids.add(tempId);
+                       String pkey = ConverterUtils.toString(tempId).replace("[", "").replace("]", "");
+                        if (pkey.contains(",")) {
+                            String[] pkeys = pkey.split(",");
+                            for (String id : pkeys) {
+                                ids.add(id);
+                            }
+                        }else{
+                            ids.add(pkey);
+                        }
                     }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
