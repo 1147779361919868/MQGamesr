@@ -6,8 +6,8 @@ import java.util.List;
 
 /**
  * 只有实现了这个接口的才能自动翻译
- * by jackwong
- * @author jackwong
+ * by jackwang
+ * @author jackwang
  * @date 2020-05-19 10:26:15
  */
 public interface AutoTransAble<V extends VO> {

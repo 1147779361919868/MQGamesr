@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 字典翻译服务
  *
- * @author jackwong
+ * @author jackwang
  * @date 2020-05-18 14:41:20
  */
 public class DictionaryTransService implements ITransTypeService, InitializingBean {
