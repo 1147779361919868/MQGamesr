@@ -208,7 +208,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
         if (entitySet != null) {
             for (Class<?> entity : entitySet) {
                 // 获取该类
-                Object baseService = SpringContextUtil.getBeanByClass(entity);
+                Object baseService = SpringContextUtil.getBeanByName(entity);
                 if (!(baseService instanceof AutoTransAble)) {
                     continue;
                 }
