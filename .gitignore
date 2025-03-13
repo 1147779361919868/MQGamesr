@@ -33,3 +33,4 @@ hs_err_pid*
 /easy_trans_jpa_extend/target
 /easy_trans_mybatis_plus_extend/*.iml
 /easy_trans_service/*.iml
+/easy_trans_anno/*.iml

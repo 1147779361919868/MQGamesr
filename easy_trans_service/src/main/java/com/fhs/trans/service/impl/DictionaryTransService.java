@@ -6,6 +6,7 @@ import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
+import com.fhs.trans.fi.LocaleGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -30,6 +31,10 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
      * 用来放字典缓存的map
      */
     private Map<String, String> dictionaryTransMap = new ConcurrentHashMap<>();
+
+    private boolean isOpenI18n;
+
+    private LocaleGetter localeGetter;
 
     /**
      * 刷新缓存
@@ -59,7 +64,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             List<String> dicCodeList = new ArrayList<>();
             for (String dicCode : dicCodeArray) {
                 if (!StringUtil.isEmpty(dicCode)) {
-                    dicCodeList.add(dictionaryTransMap.get(key + "_" + dicCode));
+                    dicCodeList.add(dictionaryTransMap.get(getMapKey(key,dicCode)));
                 }
             }
             String transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
@@ -68,6 +73,20 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             }
             setRef(tempTrans, obj, transResult);
         }
+    }
+
+    /**
+     * 获取map翻译的key
+     * @param dictGroupCode  字典分组编码
+     * @param dictCode 字典编码
+     * @return 翻译mapkey
+     */
+    public String getMapKey(String dictGroupCode,String dictCode){
+        //开启了国际化就拼接国际化
+        if(this.isOpenI18n){
+            return  dictGroupCode + "_" + dictCode + "_" + this.localeGetter.getLanguageTag() ;
+        }
+        return dictGroupCode + "_" + dictCode ;
     }
 
     @Override
@@ -84,5 +103,13 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
         TransService.registerTransType(TransType.DICTIONARY, this);
     }
 
+    /**
+     * 开启国际化
+     * @param localeGetter
+     */
+    public void openI18n(LocaleGetter localeGetter){
+        this.isOpenI18n = true;
+        this.localeGetter = localeGetter;
+    }
 
 }
