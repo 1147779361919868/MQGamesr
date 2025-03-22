@@ -12,6 +12,7 @@ import java.util.*;
 
 /**
  * 类缓存
+ *
  * @author user
  * @date 2020-05-19 11:14:15
  */
@@ -32,7 +33,7 @@ public class ClassInfo implements Serializable {
     /**
      * 获取翻译字段 key 翻译的类型比如字典的类型为wordbook
      */
-    private Map<String,List<Field>> transFieldMap = new HashMap<String,List<Field>>();
+    private Map<String, List<Field>> transFieldMap = new HashMap<String, List<Field>>();
 
     public ClassInfo() {
         super();
@@ -70,20 +71,21 @@ public class ClassInfo implements Serializable {
 
     /**
      * 获取需要翻译的类型
+     *
      * @return 需要翻译的类型
      */
-    public String[] getTransTypes()
-    {
+    public String[] getTransTypes() {
         return transTypes;
     }
 
     /**
      * 获取需要翻译的字段
+     *
      * @param type 翻译类型
      * @return 字段集合
      */
-    public List<Field> getTransField(String type){
-        return  transFieldMap.get(type);
+    public List<Field> getTransField(String type) {
+        return transFieldMap.get(type);
     }
 
     private void getClazzFieldMap() throws InstantiationException, IllegalAccessException {

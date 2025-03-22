@@ -8,6 +8,7 @@ public interface LocaleGetter {
 
     /**
      * 获取语言标记
+     *
      * @return
      */
     String getLanguageTag();

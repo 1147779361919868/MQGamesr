@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
  * 翻译方法的返回结果
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
+@Target({ElementType.METHOD})
 public @interface TransMethodResult {
 }

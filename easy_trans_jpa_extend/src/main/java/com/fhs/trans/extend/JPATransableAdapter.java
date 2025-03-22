@@ -16,8 +16,7 @@ public class JPATransableAdapter implements AutoTransAble {
 
     private Class<? extends VO> voClass;
 
-    public JPATransableAdapter(Class<? extends VO> voClass,EntityManager em)
-    {
+    public JPATransableAdapter(Class<? extends VO> voClass, EntityManager em) {
         this.em = em;
         this.voClass = voClass;
     }
@@ -25,12 +24,12 @@ public class JPATransableAdapter implements AutoTransAble {
 
     @Override
     public List findByIds(List ids) {
-        if(ids==null || ids.isEmpty()){
+        if (ids == null || ids.isEmpty()) {
             return new ArrayList();
         }
         TypedQuery query = em.createQuery(getSelectSql()
-                +" WHERE tbl." + getPkeyFieldName() +   " IN :ids",voClass);
-        query.setParameter("ids",ids);
+                + " WHERE tbl." + getPkeyFieldName() + " IN :ids", voClass);
+        query.setParameter("ids", ids);
         return query.getResultList();
     }
 
@@ -48,15 +47,15 @@ public class JPATransableAdapter implements AutoTransAble {
 
     @Override
     public List select() {
-        TypedQuery query = em.createQuery(getSelectSql(),voClass);
+        TypedQuery query = em.createQuery(getSelectSql(), voClass);
         return query.getResultList();
     }
 
     @Override
     public VO selectById(Object pkey) {
         TypedQuery query = em.createQuery(getSelectSql()
-                +" WHERE tbl." + getPkeyFieldName() +   " = :id", voClass);
-        query.setParameter("id",pkey);
+                + " WHERE tbl." + getPkeyFieldName() + " = :id", voClass);
+        query.setParameter("id", pkey);
         return (VO) query.getSingleResult();
     }
 

@@ -13,6 +13,7 @@ import java.util.Map;
 
 /**
  * 支持vo 即可进行翻译
+ *
  * @author wanglei
  * @date 2020-05-19 11:51:08
  */
@@ -27,27 +28,28 @@ public interface VO {
 
     /**
      * 获取翻译map
-     * @return  翻译map
+     *
+     * @return 翻译map
      */
-    default Map<String,String> getTransMap(){
+    default Map<String, String> getTransMap() {
         return null;
     }
 
     /**
      * 获取主键
-     * @return  主键
+     *
+     * @return 主键
      */
     @JsonIgnore
     @JSONField(serialize = false)
-     default Object getPkey(){
-         Field idField = getIdField(true);
-         try {
-             return idField.get(this);
-         } catch (IllegalAccessException e) {
-             return null;
-         }
-     }
-
+    default Object getPkey() {
+        Field idField = getIdField(true);
+        try {
+            return idField.get(this);
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+    }
 
 
     /**

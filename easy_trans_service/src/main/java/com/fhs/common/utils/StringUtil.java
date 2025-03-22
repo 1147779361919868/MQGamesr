@@ -429,8 +429,6 @@ public class StringUtil {
     }
 
 
-
-
     /**
      * 将id类型的list用","拼接
      *
@@ -449,7 +447,7 @@ public class StringUtil {
      * @return 可以直接in的字符串
      */
     public static String getStrForIn(Collection collection, boolean isAddMarks) {
-        if(collection == null || collection.isEmpty()){
+        if (collection == null || collection.isEmpty()) {
             return "";
         }
         StringBuilder result = new StringBuilder();

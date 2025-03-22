@@ -10,6 +10,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -34,10 +35,10 @@ public class MybatisPlusTransableRegister implements ApplicationListener<Applica
         Set<Class<?>> entitySet = AutoTransService.scan(AutoTrans.class, packageNames.split(";"));
         // 遍历所有class，获取所有用@autowareYLM注释的字段
         if (entitySet != null) {
-            final  List<String> namespaceList = new ArrayList<>();
+            final List<String> namespaceList = new ArrayList<>();
             for (Class<?> entity : entitySet) {
                 AutoTrans autoTransSett = entity.getAnnotation(AutoTrans.class);
-                if(autoTransSett.ref()== VO.class || (!autoTransSett.ref().isAnnotationPresent(TableName.class))){
+                if (autoTransSett.ref() == VO.class || (!autoTransSett.ref().isAnnotationPresent(TableName.class))) {
                     continue;
                 }
                 // 获取该类
@@ -46,12 +47,12 @@ public class MybatisPlusTransableRegister implements ApplicationListener<Applica
                     continue;
                 }
                 namespaceList.add(autoTransSett.namespace());
-                autoTransService.regTransable(new MybatisPlusTransableAdapter(autoTransSett.ref()),autoTransSett);
+                autoTransService.regTransable(new MybatisPlusTransableAdapter(autoTransSett.ref()), autoTransSett);
             }
             new Thread(() -> {
                 Thread.currentThread().setName("refresh auto trans cache");
                 for (String namespace : namespaceList) {
-                    autoTransService.refreshOneNamespace( namespace);
+                    autoTransService.refreshOneNamespace(namespace);
                 }
             }).start();
 

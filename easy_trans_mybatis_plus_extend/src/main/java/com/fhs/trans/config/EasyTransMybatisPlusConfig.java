@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * mybatis plus适配器
+ *
  * @author wanglei
  */
 @Slf4j
@@ -21,7 +22,7 @@ public class EasyTransMybatisPlusConfig {
     private String packageNames;
 
     @Bean
-    public MybatisPlusTransableRegister mybatisPlusTransableRegister(){
+    public MybatisPlusTransableRegister mybatisPlusTransableRegister() {
         MybatisPlusTransableRegister result = new MybatisPlusTransableRegister();
         result.setPackageNames(packageNames);
         return result;

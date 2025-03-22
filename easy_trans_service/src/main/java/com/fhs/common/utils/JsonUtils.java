@@ -130,7 +130,7 @@ public class JsonUtils {
      * @return json字符串
      */
     public static String list2json(List<?> list) {
-        if(list==null){
+        if (list == null) {
             return "[]";
         }
         return object2json(list);
@@ -143,7 +143,7 @@ public class JsonUtils {
      * @return json字符串
      */
     public static String array2json(Object[] array) {
-        if(array==null){
+        if (array == null) {
             return "[]";
         }
         return object2json(array);
@@ -166,7 +166,7 @@ public class JsonUtils {
      * @return json字符串
      */
     public static String set2json(Set<?> set) {
-        if(set==null){
+        if (set == null) {
             return "[]";
         }
         return object2json(set);
@@ -228,6 +228,7 @@ public class JsonUtils {
 
     /**
      * 把json字符串转换为list
+     *
      * @param jsonStr
      * @return
      */
@@ -269,7 +270,6 @@ public class JsonUtils {
         }
         return map;
     }
-
 
 
     /**

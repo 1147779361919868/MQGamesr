@@ -45,14 +45,14 @@ public interface ITransTypeService {
         }
     }
 
-    default void setRef(Trans trans, VO vo, Map<String,String> valMap) {
+    default void setRef(Trans trans, VO vo, Map<String, String> valMap) {
         if (CheckUtils.isNotEmpty(trans.ref())) {
             String ref = trans.ref();
             String[] refSetting = ref.split("#");
             if (refSetting.length == 1) {
-                if(valMap.size()>0){
-                   String key = valMap.keySet().iterator().next();
-                   ReflectUtils.setValue(vo, refSetting[0], valMap.get(key));
+                if (valMap.size() > 0) {
+                    String key = valMap.keySet().iterator().next();
+                    ReflectUtils.setValue(vo, refSetting[0], valMap.get(key));
                 }
             } else if (refSetting.length == 2) {
                 ReflectUtils.setValue(vo, refSetting[0], valMap.get(refSetting[1]));

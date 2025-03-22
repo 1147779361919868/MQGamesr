@@ -42,6 +42,7 @@ public class TransServiceConfig {
 
     /**
      * 翻译服务主服务
+     *
      * @return
      */
     @Bean
@@ -51,6 +52,7 @@ public class TransServiceConfig {
 
     /**
      * 自动翻译服务
+     *
      * @return
      */
     @Bean
@@ -63,6 +65,7 @@ public class TransServiceConfig {
 
     /**
      * 字典翻译服务
+     *
      * @return
      */
     @Bean
@@ -74,16 +77,17 @@ public class TransServiceConfig {
 
     /**
      * 自动翻译方法结果aop
+     *
      * @return
      */
     @Bean
-    public TransMethodResultAop transMethodResultAop(){
+    public TransMethodResultAop transMethodResultAop() {
         return new TransMethodResultAop();
     }
 
     @Bean
     @ConditionalOnProperty(name = "easy-trans.is-enable-redis", havingValue = "true")
-    public TransMessageListener transMessageListener(){
+    public TransMessageListener transMessageListener() {
         return new TransMessageListener();
     }
 
@@ -91,17 +95,18 @@ public class TransServiceConfig {
      * redis消息监听器容器
      * 可以添加多个监听不同话题的redis监听器，只需要把消息监听器和相应的消息订阅处理器绑定，该消息监听器
      * 通过反射技术调用消息订阅处理器的相关方法进行一些业务处理
+     *
      * @param connectionFactory redis连接池
-     * @param listenerAdapter 监听适配器
+     * @param listenerAdapter   监听适配器
      * @return
      */
     @Bean
     @ConditionalOnProperty(name = "easy-trans.is-enable-redis", havingValue = "true")
-    RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter){
+    RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         //订阅多个频道
-        container.addMessageListener(listenerAdapter,new PatternTopic("trans"));
+        container.addMessageListener(listenerAdapter, new PatternTopic("trans"));
         //序列化对象（特别注意：发布的时候需要设置序列化；订阅方也需要设置序列化）
         StringRedisSerializer seria = new StringRedisSerializer();
         container.setTopicSerializer(seria);
@@ -111,16 +116,16 @@ public class TransServiceConfig {
     //表示监听一个频道
     @Bean
     @ConditionalOnProperty(name = "easy-trans.is-enable-redis", havingValue = "true")
-    MessageListenerAdapter listenerAdapter(TransMessageListener receiver){
-        MessageListenerAdapter result = new MessageListenerAdapter(receiver,"handelMsg");
-        JdkSerializationRedisSerializer valSerializer =new JdkSerializationRedisSerializer();
+    MessageListenerAdapter listenerAdapter(TransMessageListener receiver) {
+        MessageListenerAdapter result = new MessageListenerAdapter(receiver, "handelMsg");
+        JdkSerializationRedisSerializer valSerializer = new JdkSerializationRedisSerializer();
         result.setSerializer(valSerializer);
         return result;
     }
 
     @Bean
     @ConditionalOnProperty(name = "easy-trans.is-enable-redis", havingValue = "true")
-    public RedisCacheService redisCacheService(RedisTemplate redisTemplate,AutoTransService autoTransService){
+    public RedisCacheService redisCacheService(RedisTemplate redisTemplate, AutoTransService autoTransService) {
         RedisCacheServiceImpl redisCacheService = new RedisCacheServiceImpl();
         redisCacheService.setRedisTemplate(redisTemplate);
         redisCacheService.setStrRedisTemplate(redisTemplate);
@@ -129,10 +134,8 @@ public class TransServiceConfig {
     }
 
 
-
-
     @Bean("springContextUtil")
-    public SpringContextUtil springContextUtil(){
+    public SpringContextUtil springContextUtil() {
         return new SpringContextUtil();
     }
 }

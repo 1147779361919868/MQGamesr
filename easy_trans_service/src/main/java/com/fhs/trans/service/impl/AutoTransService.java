@@ -167,13 +167,13 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                 try {
                     Object tempId = tempField.get(obj);
                     if (CheckUtils.isNotEmpty(tempId)) {
-                       String pkey = ConverterUtils.toString(tempId).replace("[", "").replace("]", "");
+                        String pkey = ConverterUtils.toString(tempId).replace("[", "").replace("]", "");
                         if (pkey.contains(",")) {
                             String[] pkeys = pkey.split(",");
                             for (String id : pkeys) {
                                 ids.add(id);
                             }
-                        }else{
+                        } else {
                             ids.add(pkey);
                         }
                     }
@@ -409,8 +409,8 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
         this.redisTransCache = redisTransCache;
     }
 
-    public void regTransable(AutoTransAble transAble,AutoTrans autoTransSett){
-        this.baseServiceMap.put(autoTransSett.namespace(),transAble);
+    public void regTransable(AutoTransAble transAble, AutoTrans autoTransSett) {
+        this.baseServiceMap.put(autoTransSett.namespace(), transAble);
         this.transSettMap.put(autoTransSett.namespace(), autoTransSett);
     }
 }

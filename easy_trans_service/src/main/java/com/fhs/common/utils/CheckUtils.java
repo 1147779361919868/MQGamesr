@@ -238,7 +238,6 @@ public class CheckUtils {
     }
 
 
-
     /**
      * 效验固话
      *
@@ -253,6 +252,7 @@ public class CheckUtils {
 
     /**
      * 校验sql是否有关键字
+     *
      * @param str sql字符串
      * @return true 代表有 false字表没有
      */

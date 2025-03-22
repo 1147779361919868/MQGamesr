@@ -7,21 +7,23 @@ import java.lang.annotation.Target;
 
 /**
  * 翻译
- * @author wanglei
  *
+ * @author wanglei
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
+@Target({ElementType.FIELD})
 public @interface Trans {
 
     /**
      * 获取翻译类型，比如 wordbook 是字典
+     *
      * @return 类型
      */
     String type();
 
     /**
      * 字段 比如  要翻译男女 上面的type写dictionary 此key写sex即可
+     *
      * @return
      */
     String key() default "";
@@ -29,6 +31,7 @@ public @interface Trans {
     /**
      * 设置到的target value  比如我有一个sex字段，有一个sexName 字段  sex是0 设置ref翻译服务可以自动把sexname设置为男
      * 如果是auto trans目标缓存有多少 有name,age 两个字段   我想要teacherName  可以写 teacherName#name
+     *
      * @return
      */
     String ref() default "";

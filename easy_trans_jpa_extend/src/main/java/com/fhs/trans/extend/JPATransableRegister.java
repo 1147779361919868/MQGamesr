@@ -42,10 +42,10 @@ public class JPATransableRegister implements ApplicationListener<ApplicationRead
         Set<Class<?>> entitySet = AutoTransService.scan(AutoTrans.class, packageNames.split(";"));
         // 遍历所有class，获取所有用@autowareYLM注释的字段
         if (entitySet != null) {
-            final  List<String> namespaceList = new ArrayList<>();
+            final List<String> namespaceList = new ArrayList<>();
             for (Class<?> entity : entitySet) {
                 AutoTrans autoTransSett = entity.getAnnotation(AutoTrans.class);
-                if(autoTransSett.ref()== VO.class || (!autoTransSett.ref().isAnnotationPresent(Entity.class))){
+                if (autoTransSett.ref() == VO.class || (!autoTransSett.ref().isAnnotationPresent(Entity.class))) {
                     continue;
                 }
                 // 获取该类
@@ -54,12 +54,12 @@ public class JPATransableRegister implements ApplicationListener<ApplicationRead
                     continue;
                 }
                 namespaceList.add(autoTransSett.namespace());
-                autoTransService.regTransable(new JPATransableAdapter(autoTransSett.ref(),em),autoTransSett);
+                autoTransService.regTransable(new JPATransableAdapter(autoTransSett.ref(), em), autoTransSett);
             }
             new Thread(() -> {
                 Thread.currentThread().setName("refresh auto trans cache");
                 for (String namespace : namespaceList) {
-                    autoTransService.refreshOneNamespace( namespace);
+                    autoTransService.refreshOneNamespace(namespace);
                 }
             }).start();
 

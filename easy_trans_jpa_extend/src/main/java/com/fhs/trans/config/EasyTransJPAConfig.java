@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * mybatis plus适配器
+ *
  * @author wanglei
  */
 @Slf4j
@@ -21,7 +22,7 @@ public class EasyTransJPAConfig {
     private String packageNames;
 
     @Bean
-    public JPATransableRegister jpaTransableRegister(){
+    public JPATransableRegister jpaTransableRegister() {
         JPATransableRegister result = new JPATransableRegister();
         result.setPackageNames(packageNames);
         return result;

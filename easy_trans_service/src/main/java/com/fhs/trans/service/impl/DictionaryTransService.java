@@ -64,7 +64,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
             List<String> dicCodeList = new ArrayList<>();
             for (String dicCode : dicCodeArray) {
                 if (!StringUtil.isEmpty(dicCode)) {
-                    dicCodeList.add(dictionaryTransMap.get(getMapKey(key,dicCode)));
+                    dicCodeList.add(dictionaryTransMap.get(getMapKey(key, dicCode)));
                 }
             }
             String transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
@@ -77,16 +77,17 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
 
     /**
      * 获取map翻译的key
-     * @param dictGroupCode  字典分组编码
-     * @param dictCode 字典编码
+     *
+     * @param dictGroupCode 字典分组编码
+     * @param dictCode      字典编码
      * @return 翻译mapkey
      */
-    public String getMapKey(String dictGroupCode,String dictCode){
+    public String getMapKey(String dictGroupCode, String dictCode) {
         //开启了国际化就拼接国际化
-        if(this.isOpenI18n){
-            return  dictGroupCode + "_" + dictCode + "_" + this.localeGetter.getLanguageTag() ;
+        if (this.isOpenI18n) {
+            return dictGroupCode + "_" + dictCode + "_" + this.localeGetter.getLanguageTag();
         }
-        return dictGroupCode + "_" + dictCode ;
+        return dictGroupCode + "_" + dictCode;
     }
 
     @Override
@@ -105,9 +106,10 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
 
     /**
      * 开启国际化
+     *
      * @param localeGetter
      */
-    public void openI18n(LocaleGetter localeGetter){
+    public void openI18n(LocaleGetter localeGetter) {
         this.isOpenI18n = true;
         this.localeGetter = localeGetter;
     }

@@ -2,6 +2,7 @@ package com.fhs.core.trans.constant;
 
 /**
  * 翻译类型
+ *
  * @author wanglei
  * @date 2020-05-19 10:15:15
  */
