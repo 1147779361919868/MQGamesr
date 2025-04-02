@@ -18,4 +18,8 @@ public interface TransType {
      */
     String DICTIONARY = "dictionary";
 
+    /**
+     * 简单翻译
+     */
+    String SIMPLE = "simple";
 }

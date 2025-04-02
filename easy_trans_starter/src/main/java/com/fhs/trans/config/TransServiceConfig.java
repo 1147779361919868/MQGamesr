@@ -3,14 +3,18 @@ package com.fhs.trans.config;
 import com.fhs.cache.service.RedisCacheService;
 import com.fhs.cache.service.impl.RedisCacheServiceImpl;
 import com.fhs.common.spring.SpringContextUtil;
+import com.fhs.trans.advice.EasyTransResponseBodyAdvice;
 import com.fhs.trans.aop.TransMethodResultAop;
 import com.fhs.trans.listener.TransMessageListener;
 import com.fhs.trans.service.impl.AutoTransService;
 import com.fhs.trans.service.impl.DictionaryTransService;
+import com.fhs.trans.service.impl.SimpleTransService;
 import com.fhs.trans.service.impl.TransService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -24,6 +28,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Slf4j
 @Configuration
+@ServletComponentScan({"com.fhs.trans.filter"})
 public class TransServiceConfig {
 
     /**
@@ -76,6 +81,18 @@ public class TransServiceConfig {
     }
 
     /**
+     * 简单翻译
+     * @return
+     */
+    @Bean
+    @ConditionalOnBean(SimpleTransService.SimpleTransDiver.class)
+    public SimpleTransService simpleTransService(SimpleTransService.SimpleTransDiver dirver) {
+        SimpleTransService result =  new SimpleTransService();
+        result.regsiterTransDiver(dirver);
+        return result;
+    }
+
+    /**
      * 自动翻译方法结果aop
      *
      * @return
@@ -84,6 +101,13 @@ public class TransServiceConfig {
     public TransMethodResultAop transMethodResultAop() {
         return new TransMethodResultAop();
     }
+
+    @Bean
+    @ConditionalOnProperty(name = "easy-trans.is-enable-global", havingValue = "true")
+    public EasyTransResponseBodyAdvice EasyTransResponseBodyAdvice() {
+        return new EasyTransResponseBodyAdvice();
+    }
+
 
     @Bean
     @ConditionalOnProperty(name = "easy-trans.is-enable-redis", havingValue = "true")
