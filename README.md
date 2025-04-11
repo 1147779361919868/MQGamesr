@@ -1,40 +1,26 @@
 # easy_trans
 
-#### 介绍
+# 介绍
 
-2021年啦，Mybatis Plus/Jpa的使用越来越多，项目中写SQL越来越少了，有的时候不得已还得写sql，比如：
-关联字典，关联其他的表使用外键拿其他表的title/name 等等，为了更优雅的实现id变name/title 字典码变字典描述，easy trans横空出世，通过2个注解就能实现数据翻译，配合自己封装的一些baseService baseController，在配合一些代码生成器插件(比如EasyCode),可真正实现简单的CRUD不写一行代码的目标。
+在项目开发中，借助JPA和Mybatis Plus我们已经可以做到单表查询不写SQL，但是很多时候我们需要关联字典表，关联其他表来实现字典码和外键的翻译，又要去写sql，使用 EasyTrans 你只需要在被翻译的pojo属性上加一个注解即可完成字典码/外键 翻译。
 
 先看效果：
 <br/>
-![输入图片说明](https://images.gitee.com/uploads/images/2021/0414/164655_849689bc_339743.jpeg "宣传图_看图王.jpg")
-
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0923/192412_492187e6_339743.png "微信截图_20210923192348.png")
 
 easy trans适用于三种场景<br/>
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想做表关联查询<br/>
 2   我有一个字典吗 sex  和 一个字典值0  我希望能翻译成   男  给客户展示。<br/>
 3   我有一组user id 比如 1，2,3  我希望能展示成 张三,李四,王五 给客户<br/>
 
-easy trans的三种模式<br/>
-1  使用redis缓存模式<br/>
-&nbsp;&nbsp;&nbsp; 一般用于分布式/微服务系统，比如我有用户服务和订单服务，在订单列表中需要展示创建人，他们又不是同一个进程，db也不是同一个，可使用redis 翻译模式 <br/> 
-
-2  内存缓存(hashmap)模式<br/>
-&nbsp;&nbsp;&nbsp;  一般用于单体模式，缓存放到hashmap中。<br/>
-
-3  非缓存模式<br/>
- &nbsp;&nbsp;&nbsp;  非缓存模式不使用缓存，调用 findbyids方法来获取数据用于翻译，一般用于表数据量比较大，缓存扛不住的情况。<br/>
- 
- 
-
-
-#### 安装教程
+# 食用步骤
+## 技术经理/架构 需要做的事情
 1 、先把maven 引用加上
 ``` xml
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.8</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -42,7 +28,7 @@ easy trans的三种模式<br/>
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.8</version>
         </dependency>
 ```
   JPA 用户另外还需要加以下扩展：
@@ -50,25 +36,27 @@ easy trans的三种模式<br/>
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_jpa_extend</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.8</version>
         </dependency>
 ```
-2、如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
+ 如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
 ``` xml
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 ```
-3、在yaml中添加如下配置
+2、在yaml中添加如下配置
 ``` YAML
 easy-trans:
    autotrans:
-       #您的service所在的包 支持通配符比如com.*.**.service.**，他的默认值是com.*.*.service.impl
-       package: com.fhs.test.service.** 
-	   #启用redis缓存
-   is-enable-redis: true
-  #yixi 
+       #您的service/dao所在的包 支持通配符比如com.*.**.service.**，他的默认值是com.*.*.service.impl
+       package: com.fhs.test.service.**;com.fhs.test.dao.** 
+   #启用redis缓存 如果不用redis请设置为false
+   is-enable-redis: true 
+   #启用全局翻译(拦截所有responseBody进行自动翻译)，如果对于性能要求很高可关闭此配置
+   is-enable-global: true 
+  
 spring:#如果用到redis配置redis连接
   redis:
     host: 192.168.0.213
@@ -77,214 +65,50 @@ spring:#如果用到redis配置redis连接
     database: 0
     timeout: 6000
 ```
-4、如果不使用redis，请在启动类加禁用掉redis的自动配置类
+3、如果不使用redis，请在启动类加禁用掉redis的自动配置类
 ``` java
 @SpringBootApplication(exclude = { RedisAutoConfiguration.class })
 ```
-
-#### 使用说明(请务必看完本段)
-
-1、字典翻译使用说明---直接上代码了，可以配合InitializingBean一起玩.<br/>
-&nbsp;&nbsp;1.1 翻译缓存初始化<br/>
-``` java
-    @Autowired  //注入字典翻译服务
-    private  DictionaryTransService dictionaryTransService;
-	
-	   //在某处将字典缓存刷新到翻译服务中，以下是demo
+4、初始化字典数据(如果你们项目没字典表请忽略)
+ ``` java
+        @Autowired  //注入字典翻译服务
+        private  DictionaryTransService dictionaryTransService;
+	    //在某处将字典缓存刷新到翻译服务中，以下是demo
 	    Map<String,String> transMap = new HashMap<>();
         transMap.put("0","男");
         transMap.put("1","女");
         dictionaryTransService.refreshCache("sex",transMap);
-```
-&nbsp;&nbsp;1.2 字典翻译使用<br/>
-``` java
-   //在对应的字段上 加此注解，type为TransType.DICTIONARY，key为字典分组码，ref为选填，如果设置了则会自动将翻译结果设置到此字段上
-    @Trans(type = TransType.DICTIONARY,key = "sex",ref = "sexName")
-    private Integer sex;
-
-    private String sexName;
-```
-
-2、AutoTrans（除了字典外的其他表翻译）使用说明---直接上代码了<br/>
-&nbsp;&nbsp;2.1.1 Mybatis plus用户 使用AutoTrans(不是Mybatis plus的请直接看2.1.3 是MP的可以跳过2.1.3)<br/>
-``` java
-    //mp用户需要设置ref设置po 的class但是不需要实现AutoTransAble接口
-    @AutoTrans(namespace = "usermp",fields = "name",
-        defaultAlias = "user",ref = UserMp.class)
-	public interface UserMapperMp extends BaseMapper<UserMp> {
-	}
-```
-&nbsp;&nbsp;2.1.2 SpringDataJPA用户 使用AutoTrans<br/>
-``` java
-    @Repository
-    @AutoTrans(namespace = "school",useCache = true,fields = "schoolName",ref = School.class)
-    public interface SchoolRepository extends JpaRepository<School,String> {
-    }
-```
-
-&nbsp;&nbsp;2.1.3 如果不是用jpa/mybatis plus的话需要在 service实现类改动，主要2个点1是添加AutoTrans注解，2 是实现AutoTransAble 接口<br/>
-``` java
-@Service
-@AutoTrans(namespace = "teacher",fields = "name",defaultAlias = "teacher",useCache = true,useRedis = true)  
-//namespace = 表别名  fields = 哪些字段需要出现在翻译结果中这里写了name defaultAlias =默认别名，比如我这里有个name字段别的表也有个name字段，为了区分这里配置为teacher 在翻译结果中 就会出现teacherName 而不是name  useCache = 是否使用缓存  useRedis = 是否使用redis缓存
-public class TeacherService implements AutoTransAble {
-
-   //在不使用缓存的时候使用，如果transMore的时候会拼接teacherid集合，调用此方法获取id集合对应的teacher对象
-     public List<P> findByIds(List<?> ids) {
-	    //推荐使用JPA/Mybatis Plus的方法哦
-        return this.baseMapper.selectBatchIds(ids);
-    }
- 
- // 在开启缓存的时候，springboot启动完成后会拿所有数据放到缓存里
-    @Override
-    public List select() {
-      return  this.baseMapper.selectList((Wrapper)null)
-    }
-
-// 在不开启缓存的时候，transone会通过此方法获取翻译数据
-    @Override
-    public VO selectById(Object primaryValue) {
-       return this.baseMapper.selectById(primaryValue);
-    }
-```
-以上，建议在baseservice中添加以上几个方法，这样子service就不用每个都写了。
-
-&nbsp;&nbsp;2.2 Autotrans翻译使用</br>
-``` java
-     //指定翻译的namespace，和翻译类型为TransType.AUTO_TRANS
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher")
-    private String teacherId;
-   //如果有2个teacherid 可以通过namespace#别名  来起别名区分
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english")
-    private String englishteacherId;
-
-    //同样支持ref ，将字翻译结果赋值到某个字段上
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher",ref = "teacherName")
-    private String teacherId;
-
-    private String teacherName;
-
-    //如果teacher 对外开放了多个字段当做翻译结果，比如 name和age，我这里只要age  ref可以同如下写法
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english",ref = "engTeacherAge#age")
-    private String englishteacherId;
-
-    private String engTeacherAge;
-```
-3、POJO修改 a 实现TransPojo接口(Teacher类也要实现哦)，提供一个transMap(可选)，框架会把翻译结果put到这个map中，建议使用basePOJO 的方法来实现
-
-``` java
+```  
+## 普通程序员需要做的事情
+pojo 中添加
+``` java   
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+//实现TransPojo  接口，代表这个类需要被翻译或者被当作翻译的数据源
 public class Student implements TransPojo {
-
-    private String studentName;
-
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher",ref = "teacherName")
-    private String teacherId;
-
-    private String teacherName;
-
-
-    @Trans(type = TransType.AUTO_TRANS,key = "teacher#english",ref = "engTeacherAge#age")
-    private String englishteacherId;
-
-    private String engTeacherAge;
-
+     // 字典翻译 ref为非必填
     @Trans(type = TransType.DICTIONARY,key = "sex",ref = "sexName")
     private Integer sex;
 
+    //这个字段可以不写，实现了TransPojo接口后有一个getTransMap方法，sexName可以让前端去transMap取
     private String sexName;
-
-    //transMap是可选的，加了就会把所有的翻译结果都扔到这里，可以偷懒不定义那么多字段了，@Trans注解也就可以不写ref属性了
-    public Map<String,String> transMap = new HashMap<>();
-
     
+    //SIMPLE 翻译，用于关联其他的表进行翻译    schoolName 为 School 的一个字段
+    @Trans(type = TransType.SIMPLE,target = School.class,fields = "schoolName")
+    private String schoolId;
 }
-
 ```
-4、框架中没有使用JPA/Mybatis Plus怎么办
-
-``` java
-   //TransPojo中有一个getPkey 方法默认是找@Id 或者 @TableId 标识的字段，如果没有使用JPA/Mybatis Plus 可重写此方法返回表主键的值比如 return this.id;
-
-    @JsonIgnore
-    @JSONField(serialize = false)
-     default Object getPkey(){
-         Field idField = getIdField(true);
-         try {
-             return idField.get(this);
-         } catch (IllegalAccessException e) {
-             return null;
-         }
-     }
-
-```
-5、准备工作已经完成，最后一步，使用翻译服务进行翻译
-``` java
-    @Autowired
-    private TransService transService;
-
-    @Test
-    public void transOne(){
-        Student student = new Student();
-        student.setStudentName("张三");
-        student.setTeacherId("1");
-        student.setEnglishteacherId("2");
-        student.setSex(1);
-		//翻译一个对象
-        transService.transOne(student);
-        System.out.println(JsonUtils.bean2json(student));
-    }
+然后访问你的controller，看返回结果。
 
 
-    @Test
-    public void transMore(){
-        Student student = new Student();
-        student.setStudentName("张三");
-        student.setTeacherId("1");
-        student.setEnglishteacherId("2");
-        student.setSex(1);
-        List<Student> studentList = new ArrayList<>();
-        studentList.add(student);
-		//翻译多个对象
-        transService.transMore(studentList);
-        System.out.println(JsonUtils.list2json(studentList));
-    }
-	
-	@TransMethodResult //加了注解就可以不用手动调用transService的方法了
-    public Student getStudent(){
-        Student student = new Student();
-        student.setStudentName("张三");
-        student.setTeacherId("1");
-        student.setFriendUserId("1");
-        student.setEnglishteacherId("2");
-        student.setSex(1);
-        return student;
-    }
-```
 
-6、缓存刷新<br/>
-&nbsp;&nbsp;6.1 非集群模式下的缓存刷新<br/>
-调用AutoTransService的refreshOneNamespace(String namespace) <br/>
-map中put一个namespace 为teacher的话，就代表刷新teacher的缓存，如果map中什么都不put代表刷新所有缓存。<br/>
-&nbsp;&nbsp;6.2 集群模式下的缓存刷新(必须开启redis支持才可以)<br/>
-``` java
- @Autowired
- private RedisCacheService redisCacheService;
- Map<String, String> message = new HashMap();
-            message.put("transType", "auto");
-            message.put("namespace", "teacher");
-            this.redisCacheService.convertAndSend("trans", JsonUtils.map2json(message));
-```
-7、DEMO
+# 参与贡献和技术支持
+
+ 如果遇到使用问题可以加QQ群:976278956
+
+# 示例项目
+
 https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 
-#### 参与贡献
-
-1.  如果遇到使用问题可以加QQ群:976278956
-
-#### 写到最后
-
-教程看起来挺麻烦，只需要做2处封装，使用起来就很简单了，第一就是baseserivce的封装(主要提供那三个获取翻译数据的方法 和 缓存刷新的方法)，第二就是base pojo的封装(主要是getTransMap 给翻译服务返回一个hashmap用来装填数据用)，作者已经和ruoyi guns 做好了对接，需要资料什么的可以直接加群联系作者。
