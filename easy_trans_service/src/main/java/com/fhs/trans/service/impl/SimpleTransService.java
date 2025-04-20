@@ -103,11 +103,6 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         for (Field tempField : toTransList) {
             tempField.setAccessible(true);
             Trans tempTrans = tempField.getAnnotation(Trans.class);
-            String namespace = tempTrans.key();
-            // 如果是 good#student  翻译出来应该是 goodStuName goodStuAge  customer#customer  customerName
-            if (namespace.contains("#")) {
-                namespace = namespace.substring(0, namespace.indexOf("#"));
-            }
             Set<String> ids = new HashSet<>();
             objList.forEach(obj -> {
                 try {
@@ -128,7 +123,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                 }
             });
             if (!ids.isEmpty()) {
-                List<? extends VO> dbDatas = transDiver.findByIds(new ArrayList<String>(ids),tempTrans.target());
+                List<? extends VO> dbDatas = findByIds(new ArrayList<String>(ids),tempTrans);
                 for (VO vo : dbDatas) {
                     threadLocalCache.get().put(tempTrans.target().getName() + "_" + vo.getPkey(),
                             createTempTransCacheMap(vo, tempTrans));
@@ -142,6 +137,25 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     }
 
     /**
+     * 根据id 集合 获取数据
+     * @param ids
+     * @param tempTrans
+     * @return
+     */
+    public List<? extends VO> findByIds(List<String> ids,Trans tempTrans){
+       return transDiver.findByIds(ids,tempTrans.target());
+    }
+
+    /**
+     * 根据id查询单个
+     * @param id
+     * @param tempTrans
+     * @return
+     */
+    public VO findById(String id,Trans tempTrans){
+        return transDiver.findById(id,tempTrans.target());
+    }
+    /**
      * 获取用于翻译的缓存
      *
      * @param tempTrans tempTrans
@@ -153,7 +167,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
             }
-            VO vo = this.transDiver.findById(pkey,tempTrans.target());
+            VO vo = this.findById(pkey,tempTrans);
             return createTempTransCacheMap(vo, tempTrans);
         }
         return this.threadLocalCache.get().get(tempTrans.target().getName() + "_" + pkey);
