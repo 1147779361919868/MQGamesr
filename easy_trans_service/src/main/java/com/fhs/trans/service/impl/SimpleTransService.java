@@ -180,7 +180,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param trans 配置
      * @return
      */
-    private Map<String, String> createTempTransCacheMap(Object po, Trans trans) {
+    protected Map<String, String> createTempTransCacheMap(Object po, Trans trans) {
         String fielVal = null;
         Map<String, String> tempCacheTransMap = new LinkedHashMap<>();
         if (po == null) {

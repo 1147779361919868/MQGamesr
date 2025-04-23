@@ -20,16 +20,9 @@ public class BasicVO implements VO {
     private String id;
 
     /**
-     * id字段名称
-     */
-    private String idFieldName;
-
-    /**
      * 实际内容map
      */
     private Map<String, Object> objContentMap = new HashMap<>();
 
-    public String getId() {
-        return ConverterUtils.toString(objContentMap.get(idFieldName));
-    }
+
 }

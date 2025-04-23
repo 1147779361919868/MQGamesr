@@ -21,5 +21,10 @@ public interface TransType {
     /**
      * 简单翻译
      */
+    String SIMPLE = "simple";
+
+    /**
+     * 远程翻译
+     */
     String RPC = "rpc";
 }

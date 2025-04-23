@@ -56,4 +56,16 @@ public @interface Trans {
      * @return
      */
     String alias() default "";
+
+    /**
+     * 远程服务名称
+     * @return
+     */
+    String serviceName() default  "";
+
+    /**
+     *
+     * @return
+     */
+    String targetClassName() default "";
 }

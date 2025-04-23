@@ -5,19 +5,21 @@ import com.fhs.cache.service.impl.RedisCacheServiceImpl;
 import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.trans.advice.EasyTransResponseBodyAdvice;
 import com.fhs.trans.aop.TransMethodResultAop;
+import com.fhs.trans.controller.TransProxyController;
 import com.fhs.trans.listener.TransMessageListener;
-import com.fhs.trans.service.impl.AutoTransService;
-import com.fhs.trans.service.impl.DictionaryTransService;
-import com.fhs.trans.service.impl.SimpleTransService;
-import com.fhs.trans.service.impl.TransService;
+import com.fhs.trans.service.impl.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
@@ -25,6 +27,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Configuration
@@ -91,6 +94,40 @@ public class TransServiceConfig {
         result.regsiterTransDiver(dirver);
         return result;
     }
+
+    @Bean
+    @LoadBalanced
+    @ConditionalOnMissingBean(RestTemplate.class)
+    public RestTemplate restTemplate(RestTemplateBuilder builder){
+        return builder.build();
+    }
+
+    /**
+     * 远程翻译
+     * @return
+     */
+    @Bean
+    @ConditionalOnBean(SimpleTransService.SimpleTransDiver.class)
+    public RpcTransService rpcTransService(SimpleTransService.SimpleTransDiver dirver, RestTemplate restTemplate) {
+        RpcTransService result =  new RpcTransService();
+        result.regsiterTransDiver(dirver);
+        result.setRestTemplate(restTemplate);
+        return result;
+    }
+
+    /**
+     * 远程翻译调用代理
+     * @return
+     */
+    @Bean
+    @ConditionalOnBean(SimpleTransService.SimpleTransDiver.class)
+    public TransProxyController transProxyController(SimpleTransService.SimpleTransDiver dirver) {
+        TransProxyController result =  new TransProxyController();
+        result.setSimpleTransDiver(dirver);
+        return result;
+    }
+
+
 
     /**
      * 自动翻译方法结果aop
