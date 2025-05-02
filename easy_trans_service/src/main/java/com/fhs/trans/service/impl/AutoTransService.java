@@ -442,6 +442,10 @@ class TransFieldSett {
             alias = namespace.substring(namespace.indexOf("#") + 1);
             namespace = namespace.substring(0, namespace.indexOf("#"));
         }
+        //如果别名不等于空不等于null的话则使用此别名
+        if(trans.alias()!=null && (!"".equals(trans.alias()))){
+            alias = trans.alias();
+        }
     }
 
 
