@@ -4,14 +4,14 @@
 
 在项目开发中，借助JPA和Mybatis Plus我们已经可以做到单表查询不写SQL，但是很多时候我们需要关联字典表，关联其他表来实现字典码和外键的翻译，又要去写sql，使用 EasyTrans 你只需要在被翻译的pojo属性上加一个注解即可完成字典码/外键 翻译。
 
-先看效果：
-<br/>
+先看效果：    
+
 ![输入图片说明](https://images.gitee.com/uploads/images/2021/0923/192412_492187e6_339743.png "微信截图_20210923192348.png")
 
-easy trans适用于三种场景<br/>
-1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想做表关联查询<br/>
-2   我有一个字典吗 sex  和 一个字典值0  我希望能翻译成   男  给客户展示。<br/>
-3   我有一组user id 比如 1，2,3  我希望能展示成 张三,李四,王五 给客户<br/>
+easy trans适用于三种场景   
+1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想做表关联查询   
+2   我有一个字典吗 sex  和 一个字典值0  我希望能翻译成   男  给客户展示。   
+3   我有一组user id 比如 1，2,3  我希望能展示成 张三,李四,王五 给客户   
 
 # 食用步骤
 ## 技术经理/架构 需要做的事情
@@ -79,6 +79,11 @@ spring:#如果用到redis配置redis连接
         transMap.put("1","女");
         dictionaryTransService.refreshCache("sex",transMap);
 ```  
+5、微服务配置(比如订单服务用到了用户服务的user数据来进行翻译，不牵扯微服务的可以不管)   
+ A、白名单添加  /easyTrans/proxy/**   保证其不被拦截，RPC trans的时候easytrans会自动调用目标微服务的接口来获取数据。   
+ B、应用之间的认证可以通过filter/interceptor实现，然后自定义RestTemplate 保证easytrans在请求用户服务的时候带上需要认证的参数
+
+
 ## 普通程序员需要做的事情
 pojo 中添加
 ``` java   
@@ -98,6 +103,10 @@ public class Student implements TransPojo {
     //SIMPLE 翻译，用于关联其他的表进行翻译    schoolName 为 School 的一个字段
     @Trans(type = TransType.SIMPLE,target = School.class,fields = "schoolName")
     private String schoolId;
+	
+	//远程翻译，调用其他微服务的数据源进行翻译
+	@Trans(type = TransType.RPC,targetClassName = "com.fhs.test.pojo.School",fields = "schoolName",serviceName = "easyTrans",alias = "middle")
+    private String middleSchoolId;
 }
 ```
 然后访问你的controller，看返回结果。
@@ -112,3 +121,6 @@ public class Student implements TransPojo {
 
 https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 
+# 插件文档
+
+https://gitee.com/fhs-opensource/easy_trans/wikis/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B
