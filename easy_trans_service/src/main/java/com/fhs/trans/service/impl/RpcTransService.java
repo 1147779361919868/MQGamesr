@@ -23,7 +23,6 @@ public class RpcTransService extends SimpleTransService {
     private RestTemplate restTemplate;
 
 
-
     @Override
     public List<? extends VO> findByIds(List<String> ids, Trans tempTrans) {
         Map<String, Object> paramMap = new HashMap<>();
@@ -54,7 +53,7 @@ public class RpcTransService extends SimpleTransService {
     /**
      * 创建一个临时缓存map
      *
-     * @param po        po
+     * @param po    po
      * @param trans 配置
      * @return
      */
@@ -64,7 +63,7 @@ public class RpcTransService extends SimpleTransService {
         if (po == null) {
             return tempCacheTransMap;
         }
-        BasicVO basicVO = (BasicVO)po;
+        BasicVO basicVO = (BasicVO) po;
         for (String field : trans.fields()) {
             fielVal = ConverterUtils.toString(basicVO.getObjContentMap().get(field));
             tempCacheTransMap.put(field, fielVal);

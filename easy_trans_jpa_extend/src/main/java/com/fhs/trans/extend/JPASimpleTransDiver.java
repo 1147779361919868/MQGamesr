@@ -3,6 +3,7 @@ package com.fhs.trans.extend;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.SimpleTransService;
+
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.io.Serializable;
@@ -13,12 +14,13 @@ import java.util.List;
 /**
  * mybatis plus 简单翻译驱动
  */
-public class JPASimpleTransDiver implements SimpleTransService.SimpleTransDiver{
+public class JPASimpleTransDiver implements SimpleTransService.SimpleTransDiver {
     private EntityManager em;
 
-    public JPASimpleTransDiver( EntityManager em) {
+    public JPASimpleTransDiver(EntityManager em) {
         this.em = em;
     }
+
     @Override
     public List<? extends VO> findByIds(List<? extends Serializable> ids, Class<? extends VO> targetClass) {
         if (ids == null || ids.isEmpty()) {

@@ -12,7 +12,7 @@ import java.util.HashMap;
  * 用来释放资源
  */
 @Order(0)
-@WebFilter(filterName="releaseTransCacheFilter", urlPatterns="/*")
+@WebFilter(filterName = "releaseTransCacheFilter", urlPatterns = "/*")
 public class ReleaseTransCacheFilter implements Filter {
 
     @Override
@@ -28,7 +28,7 @@ public class ReleaseTransCacheFilter implements Filter {
             chain.doFilter(request, response);
         } catch (Exception e) {
             throw e;
-        }finally {
+        } finally {
             VO.TRANS_MAP_CACHE.set(null);
         }
     }

@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * mybatis plus 简单翻译驱动
  */
-public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTransDiver{
+public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTransDiver {
 
     @Override
     public List<? extends VO> findByIds(List<? extends Serializable> ids, Class<? extends VO> targetClass) {
@@ -24,9 +24,9 @@ public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTra
         map.put("coll", ids);
         SqlSession sqlSession = this.sqlSession(targetClass);
         try {
-            return sqlSession.selectList(this.sqlStatement(SqlMethod.SELECT_BATCH_BY_IDS,targetClass), map);
+            return sqlSession.selectList(this.sqlStatement(SqlMethod.SELECT_BATCH_BY_IDS, targetClass), map);
         } finally {
-            this.closeSqlSession(sqlSession,targetClass);
+            this.closeSqlSession(sqlSession, targetClass);
         }
     }
 
@@ -35,9 +35,9 @@ public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTra
         SqlSession sqlSession = this.sqlSession(targetClass);
         VO result;
         try {
-            result = (VO) sqlSession.selectOne(this.sqlStatement(SqlMethod.SELECT_BY_ID,targetClass), id);
+            result = (VO) sqlSession.selectOne(this.sqlStatement(SqlMethod.SELECT_BY_ID, targetClass), id);
         } finally {
-            this.closeSqlSession(sqlSession,targetClass);
+            this.closeSqlSession(sqlSession, targetClass);
         }
         return result;
     }
@@ -46,15 +46,15 @@ public class MybatisPlusSimpleTransDiver implements SimpleTransService.SimpleTra
         return SqlHelper.sqlSession(voClass);
     }
 
-    protected String sqlStatement(SqlMethod sqlMethod,Class<? extends VO> voClass) {
-        return this.sqlStatement(sqlMethod.getMethod(),voClass);
+    protected String sqlStatement(SqlMethod sqlMethod, Class<? extends VO> voClass) {
+        return this.sqlStatement(sqlMethod.getMethod(), voClass);
     }
 
-    protected String sqlStatement(String sqlMethod,Class<? extends VO> voClass) {
+    protected String sqlStatement(String sqlMethod, Class<? extends VO> voClass) {
         return SqlHelper.table(voClass).getSqlStatement(sqlMethod);
     }
 
-    protected void closeSqlSession(SqlSession sqlSession,Class<? extends VO> voClass) {
+    protected void closeSqlSession(SqlSession sqlSession, Class<? extends VO> voClass) {
         SqlSessionUtils.closeSqlSession(sqlSession, GlobalConfigUtils.currentSessionFactory(voClass));
     }
 

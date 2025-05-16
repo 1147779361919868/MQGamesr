@@ -33,38 +33,49 @@ public @interface Trans {
 
     /**
      * 设置到的target value  比如我有一个sex字段，有一个sexName 字段  sex是0 设置ref翻译服务可以自动把sexname设置为男
-     * 如果是auto trans目标缓存有多少 有name,age 两个字段   我想要teacherName  可以写 teacherName#name
+     * 目标类字段配置了多个 有teacherName,teacherage 两个字段   我想要teacherName  可以写 teacherName#name
      *
      * @return
      */
     String ref() default "";
 
     /**
+     * ref 支持多个，为了保持兼容新加了一个字段
+     * 作用同ref 只是支持多个
+     *
+     * @return
+     */
+    String[] refs() default {};
+
+    /**
      * 目标class
+     *
      * @return
      */
     Class<? extends VO> target() default TransPojo.class;
 
     /**
      * 需要目标class哪些字段
+     *
      * @return
      */
     String[] fields() default {};
 
     /**
      * 别名
+     *
      * @return
      */
     String alias() default "";
 
     /**
      * 远程服务名称
+     *
      * @return
      */
-    String serviceName() default  "";
+    String serviceName() default "";
 
     /**
-     *
      * @return
      */
     String targetClassName() default "";

@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
 @Slf4j
 public class TransUtil {
 
 
-    public static Object transResult(Object result, TransService transService){
+    public static Object transResult(Object result, TransService transService) {
         List<VO> transOneVOs = getTransOneVOs(result);
         for (VO transOneVO : transOneVOs) {
             transService.transOne(transOneVO);
@@ -32,7 +33,7 @@ public class TransUtil {
      * @param proceed
      * @return
      */
-    private  static List<VO> getTransOneVOs(Object proceed) {
+    private static List<VO> getTransOneVOs(Object proceed) {
         List<VO> result = new ArrayList<>();
         if (proceed == null) {
             return result;
@@ -176,6 +177,7 @@ public class TransUtil {
         return false;
     }
 }
+
 /**
  * 实际上没什么用，只是用来判断T是否是VO的时候返回此类型
  */

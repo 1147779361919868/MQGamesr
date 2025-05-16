@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * <验证工具类>
@@ -42,6 +43,20 @@ public class CheckUtils {
         }
         return true;
     }
+
+    /**
+     * 判断对象不为空 适用于字符串数组或者对象数组
+     *
+     * @param objs 需要判断的对象
+     * @return 如果对象不为空或者null 返回true
+     */
+    public static boolean isNotEmpty(Object[] objs) {
+        if (objs == null || Stream.of(objs).allMatch(obj -> Constant.EMPTY.equals(StringUtil.toString(obj).trim()))) {
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * 判断是否是数字

@@ -10,6 +10,7 @@ import com.fhs.trans.service.AutoTransAble;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +25,7 @@ public class MybatisPlusTransableAdapter implements AutoTransAble {
 
     @Override
     public List findByIds(List ids) {
-
-        Map<String, Object> map = CollectionUtils.newHashMapWithExpectedSize(1);
+        Map<String, Object> map = new HashMap<>(1);
         map.put("coll", ids);
         SqlSession sqlSession = this.sqlSession();
         try {
@@ -37,7 +37,7 @@ public class MybatisPlusTransableAdapter implements AutoTransAble {
 
     @Override
     public List select() {
-        Map<String, Object> map = CollectionUtils.newHashMapWithExpectedSize(1);
+        Map<String, Object> map = new HashMap<>(1);
         map.put("ew", new LambdaQueryWrapper<>());
         SqlSession sqlSession = this.sqlSession();
         try {

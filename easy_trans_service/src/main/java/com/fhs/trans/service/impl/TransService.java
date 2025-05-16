@@ -3,6 +3,9 @@ package com.fhs.trans.service.impl;
 import com.fhs.trans.manager.ClassInfo;
 import com.fhs.trans.manager.ClassManager;
 import com.fhs.core.trans.vo.VO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -16,6 +19,9 @@ import java.util.Map;
  * @author wanglei
  */
 public class TransService {
+
+    private static Logger logger = LoggerFactory.getLogger(TransService.class);
+
     /**
      * key type  val是对应type的service
      */
@@ -56,7 +62,7 @@ public class TransService {
     }
 
     /**
-     * 翻译多个 字段
+     * 翻译多个VO
      *
      * @param objList 需要翻译的对象集合
      * @param objList 需要翻译的字段集合
@@ -77,8 +83,23 @@ public class TransService {
             if (transFieldList == null || transFieldList.size() == 0) {
                 continue;
             }
-            transTypeServiceMap.get(type).transMore(objList, transFieldList);
+            ITransTypeService transTypeService = transTypeServiceMap.get(type);
+            if (ObjectUtils.isEmpty(transTypeService)) {
+                logger.warn("没有匹配的转换器:" + type);
+                continue;
+            }
+            transTypeService.transMore(objList, transFieldList);
         }
     }
+
+    /**
+     * 翻译多个VO
+     *
+     * @param objList
+     */
+    public void transBatch(List<? extends VO> objList) {
+        transMore(objList);
+    }
+
 
 }

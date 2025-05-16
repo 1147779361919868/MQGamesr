@@ -33,6 +33,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
 
     /**
      * 注册翻译驱动
+     *
      * @param transDiver
      */
     public void regsiterTransDiver(SimpleTransDiver transDiver) {
@@ -123,7 +124,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                 }
             });
             if (!ids.isEmpty()) {
-                List<? extends VO> dbDatas = findByIds(new ArrayList<String>(ids),tempTrans);
+                List<? extends VO> dbDatas = findByIds(new ArrayList<String>(ids), tempTrans);
                 for (VO vo : dbDatas) {
                     threadLocalCache.get().put(tempTrans.target().getName() + "_" + vo.getPkey(),
                             createTempTransCacheMap(vo, tempTrans));
@@ -138,23 +139,26 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
 
     /**
      * 根据id 集合 获取数据
+     *
      * @param ids
      * @param tempTrans
      * @return
      */
-    public List<? extends VO> findByIds(List<String> ids,Trans tempTrans){
-       return transDiver.findByIds(ids,tempTrans.target());
+    public List<? extends VO> findByIds(List<String> ids, Trans tempTrans) {
+        return transDiver.findByIds(ids, tempTrans.target());
     }
 
     /**
      * 根据id查询单个
+     *
      * @param id
      * @param tempTrans
      * @return
      */
-    public VO findById(String id,Trans tempTrans){
-        return transDiver.findById(id,tempTrans.target());
+    public VO findById(String id, Trans tempTrans) {
+        return transDiver.findById(id, tempTrans.target());
     }
+
     /**
      * 获取用于翻译的缓存
      *
@@ -167,7 +171,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
             }
-            VO vo = this.findById(pkey,tempTrans);
+            VO vo = this.findById(pkey, tempTrans);
             return createTempTransCacheMap(vo, tempTrans);
         }
         return this.threadLocalCache.get().get(tempTrans.target().getName() + "_" + pkey);
@@ -176,7 +180,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     /**
      * 创建一个临时缓存map
      *
-     * @param po        po
+     * @param po    po
      * @param trans 配置
      * @return
      */
@@ -209,7 +213,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
          * @param ids ids
          * @return
          */
-        List<? extends VO> findByIds(List<? extends Serializable> ids,Class<? extends VO> targetClass);
+        List<? extends VO> findByIds(List<? extends Serializable> ids, Class<? extends VO> targetClass);
 
         /**
          * 根据id查询对象
@@ -217,6 +221,6 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
          * @param id id
          * @return
          */
-        VO findById(Serializable id,Class<? extends VO> targetClass);
+        VO findById(Serializable id, Class<? extends VO> targetClass);
     }
 }

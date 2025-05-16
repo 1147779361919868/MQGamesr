@@ -32,7 +32,7 @@ public class EasyTransMybatisPlusConfig {
 
     @Bean
 
-    public MybatisPlusSimpleTransDiver MybatisPlusSimpleTransDiver(){
+    public MybatisPlusSimpleTransDiver MybatisPlusSimpleTransDiver() {
         return new MybatisPlusSimpleTransDiver();
     }
 }

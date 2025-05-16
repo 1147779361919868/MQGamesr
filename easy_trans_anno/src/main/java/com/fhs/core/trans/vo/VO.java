@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * 支持vo 即可进行翻译
@@ -27,27 +31,30 @@ public interface VO {
     @JsonIgnore
     Map<Class<?>, Field> ID_FIELD_CACHE_MAP = new HashMap<>();
 
-    ThreadLocal<Map<String,Map<String,String>>> TRANS_MAP_CACHE = new ThreadLocal<>();
+    ThreadLocal<Map<String, Map<String, String>>> TRANS_MAP_CACHE = new ThreadLocal<>();
 
-    default void clearTransCache(){
-        TRANS_MAP_CACHE.set(new HashMap<>());
+    default void clearTransCache() {
+        //缓存60秒过期，避免内存泄露
+        Cache<String, Map<String, String>> cache = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).build();
+        TRANS_MAP_CACHE.set(cache.asMap());
     }
+
     /**
      * 获取翻译map
      *
      * @return 翻译map
      */
     default Map<String, String> getTransMap() {
-        if(TRANS_MAP_CACHE.get()==null){
+        if (TRANS_MAP_CACHE.get() == null) {
             clearTransCache();
         }
-        Map<String,Map<String,String>> cache =  TRANS_MAP_CACHE.get();
+        Map<String, Map<String, String>> cache = TRANS_MAP_CACHE.get();
         String cacheKey = this.getClass().getName() + "_" + this.getPkey();
-        if(cache.containsKey(cacheKey)){
+        if (cache.containsKey(cacheKey)) {
             return cache.get(cacheKey);
         }
-        Map<String,String> result = new LinkedHashMap<>();
-        cache.put(cacheKey,result);
+        Map<String, String> result = new LinkedHashMap<>();
+        cache.put(cacheKey, result);
         return result;
     }
 

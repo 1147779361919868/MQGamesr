@@ -28,7 +28,7 @@ public class TransMethodResultAop {
         Object proceed = null;
         try {
             proceed = joinPoint.proceed();
-            return TransUtil.transResult(proceed,transService);
+            return TransUtil.transResult(proceed, transService);
         } catch (Throwable e) {
             throw e;
         }

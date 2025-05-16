@@ -23,6 +23,6 @@ public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
 
     @Override
     public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        return TransUtil.transResult(o,transService);
+        return TransUtil.transResult(o, transService);
     }
 }

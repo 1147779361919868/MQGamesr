@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @Description: 此注解只可标记到service上，意思为本服务所标记的PO可自动翻译
+ * @Description: 此注解可标记到AutoTransAble的实现类或者jpa的到或者mybatis plus的mapper上
  * @Author: wanglei
  * @Date: Created in 10:14 2019/10/15
  */
@@ -34,7 +34,7 @@ public @interface AutoTrans {
      *
      * @return 默认为true 如果是false的话
      */
-    boolean useCache() default true;
+    boolean useCache() default false;
 
     /**
      * 是否使用redis存放缓存
@@ -51,7 +51,7 @@ public @interface AutoTrans {
     String defaultAlias() default "";
 
     /**
-     * 关联的类
+     * 关联的类  jpa dao/mbatis plus的时候mapper专用参数
      *
      * @return
      */

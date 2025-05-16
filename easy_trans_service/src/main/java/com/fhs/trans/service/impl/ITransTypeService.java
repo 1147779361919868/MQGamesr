@@ -9,6 +9,7 @@ import com.fhs.core.trans.vo.VO;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * 翻译接口,将此接口实现类注册到transservice即可用
@@ -43,20 +44,31 @@ public interface ITransTypeService {
         if (CheckUtils.isNotEmpty(trans.ref())) {
             ReflectUtils.setValue(vo, trans.ref(), val);
         }
+        if (CheckUtils.isNotEmpty(trans.refs())) {
+            Stream.of(trans.refs()).forEach(ref -> ReflectUtils.setValue(vo, ref, val));
+        }
     }
 
     default void setRef(Trans trans, VO vo, Map<String, String> valMap) {
         if (CheckUtils.isNotEmpty(trans.ref())) {
-            String ref = trans.ref();
-            String[] refSetting = ref.split("#");
-            if (refSetting.length == 1) {
-                if (valMap.size() > 0) {
-                    String key = valMap.keySet().iterator().next();
-                    ReflectUtils.setValue(vo, refSetting[0], valMap.get(key));
-                }
-            } else if (refSetting.length == 2) {
-                ReflectUtils.setValue(vo, refSetting[0], valMap.get(refSetting[1]));
+            setRef(trans.ref(), vo, valMap);
+        }
+        if (CheckUtils.isNotEmpty(trans.refs())) {
+            Stream.of(trans.refs()).forEach(ref -> {
+                setRef(ref, vo, valMap);
+            });
+        }
+    }
+
+    default void setRef(String ref, VO vo, Map<String, String> valMap) {
+        String[] refSetting = ref.split("#");
+        if (refSetting.length == 1) {
+            if (valMap.size() > 0) {
+                String key = valMap.keySet().iterator().next();
+                ReflectUtils.setValue(vo, refSetting[0], valMap.get(key));
             }
+        } else if (refSetting.length == 2) {
+            ReflectUtils.setValue(vo, refSetting[0], valMap.get(refSetting[1]));
         }
     }
 

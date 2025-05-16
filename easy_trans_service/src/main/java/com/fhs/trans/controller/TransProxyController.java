@@ -6,12 +6,15 @@ import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.SimpleTransService;
 import com.fhs.trans.vo.BasicVO;
 import com.fhs.trans.vo.FindByIdsQueryPayload;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,18 +38,19 @@ public class TransProxyController {
      */
     @PostMapping("/{targetClass}/findByIds")
     public List findByIds(@PathVariable("targetClass") String targetClass, @RequestBody FindByIdsQueryPayload payload) throws ClassNotFoundException {
-        Assert.notNull(targetClass,"targetClass 不可为空");
-        return simpleTransDiver.findByIds(payload.getIds(), (Class<? extends VO>) Class.forName(targetClass)).stream().map(vo->{
+        Assert.notNull(targetClass, "targetClass 不可为空");
+        return simpleTransDiver.findByIds(payload.getIds(), (Class<? extends VO>) Class.forName(targetClass)).stream().map(vo -> {
             try {
                 return vo2BasicVO(vo);
             } catch (IllegalAccessException e) {
-               return null;
+                return null;
             }
         }).collect(Collectors.toList());
     }
 
     /**
      * vo转basicvo
+     *
      * @param vo
      * @return
      * @throws IllegalAccessException
@@ -57,7 +61,7 @@ public class TransProxyController {
         List<Field> fields = ReflectUtils.getAllField(vo.getClass());
         for (Field field : fields) {
             field.setAccessible(true);
-            result.getObjContentMap().put(field.getName(),field.get(vo));
+            result.getObjContentMap().put(field.getName(), field.get(vo));
         }
         return result;
     }
@@ -68,9 +72,10 @@ public class TransProxyController {
      * @param targetClass 目标类
      */
     @GetMapping("/{targetClass}/findById/{id}")
-    public Object findByIds(@PathVariable("targetClass") String targetClass,@PathVariable("id") String id) throws ClassNotFoundException, IllegalAccessException {
-        Assert.notNull(targetClass,"targetClass 不可为空");
-        Assert.notNull(targetClass,"id 不可为空");
+    public Object findByIds(@PathVariable("targetClass") String targetClass, @PathVariable("id") String id) throws ClassNotFoundException, IllegalAccessException {
+        Assert.notNull(targetClass, "targetClass 不可为空");
+        Assert.notNull(targetClass, "id 不可为空");
         return vo2BasicVO(simpleTransDiver.findById(id, (Class<? extends VO>) Class.forName(targetClass)));
     }
+
 }
