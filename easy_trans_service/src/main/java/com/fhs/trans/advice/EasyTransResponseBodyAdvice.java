@@ -2,7 +2,9 @@ package com.fhs.trans.advice;
 
 import com.fhs.trans.service.impl.TransService;
 import com.fhs.trans.utils.TransUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
@@ -10,8 +12,15 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+@Slf4j
 @ControllerAdvice
 public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
+
+    /**
+     * 开启平铺模式
+     */
+    @Value("${easy-trans.is-enable-tile:false}")
+    private Boolean isEnableTile;
 
     @Autowired
     private TransService transService;
@@ -23,6 +32,17 @@ public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
 
     @Override
     public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        return TransUtil.transResult(o, transService);
+        Object result = TransUtil.transResult(o, transService);
+        // 开启平铺模式
+        if(isEnableTile){
+            try {
+                result = TransUtil.createProxyForJackson(result);
+            } catch (IllegalAccessException e) {
+               log.error("createProxyForJackson error",e);
+            } catch (InstantiationException e) {
+                log.error("createProxyForJackson error",e);
+            }
+        }
+        return result;
     }
 }

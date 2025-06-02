@@ -1,19 +1,13 @@
 package com.fhs.trans.config;
 
-import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fhs.cache.service.RedisCacheService;
 import com.fhs.cache.service.impl.RedisCacheServiceImpl;
 import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.trans.advice.EasyTransResponseBodyAdvice;
 import com.fhs.trans.aop.TransMethodResultAop;
 import com.fhs.trans.controller.TransProxyController;
-import com.fhs.trans.json.TransFastJsonHttpMessageConverter;
-import com.fhs.trans.json.TransMappingJackson2HttpMessageConverter;
 import com.fhs.trans.listener.TransMessageListener;
 import com.fhs.trans.service.impl.*;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -25,7 +19,6 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
@@ -33,8 +26,6 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
@@ -145,34 +136,7 @@ public class TransServiceConfig {
         return result;
     }
 
-    /**
-     * fastjson 消息转换器 使用fastjson进行平铺
-     *
-     * @return
-     */
-    @Bean
-    @ConditionalOnMissingBean(FastJsonHttpMessageConverter.class)
-    @ConditionalOnProperty(name = "easy-trans.tile", havingValue = "fastjson")
-    public TransFastJsonHttpMessageConverter transFastJsonHttpMessageConverter() {
-        TransFastJsonHttpMessageConverter result = new TransFastJsonHttpMessageConverter();
-        return result;
-    }
 
-    @Bean
-    @Primary
-    @ConditionalOnProperty(name = "easy-trans.tile", havingValue = "jackson")
-    public MappingJackson2HttpMessageConverter getMappingJackson2HttpMessageConverter() {
-        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new TransMappingJackson2HttpMessageConverter();
-        //设置日期格式
-        ObjectMapper objectMapper = new ObjectMapper();
-        mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
-        //设置中文编码格式
-        List<MediaType> list = new ArrayList<MediaType>();
-        list.add(MediaType. APPLICATION_JSON);
-        list.add(MediaType. APPLICATION_JSON_UTF8);
-        mappingJackson2HttpMessageConverter.setSupportedMediaTypes(list);
-        return mappingJackson2HttpMessageConverter;
-    }
 
 
     /**
