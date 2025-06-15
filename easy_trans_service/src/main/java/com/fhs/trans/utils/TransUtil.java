@@ -18,6 +18,18 @@ public class TransUtil {
 
 
     public static Object transResult(Object result, TransService transService) {
+        if(result ==null){
+            return null;
+        }
+        if(result instanceof Collection){
+            if(((Collection)result).isEmpty()){
+                return result;
+            }
+            if(((Collection)result).iterator().next() instanceof VO){
+                transService.transMore((List<? extends VO>) result);
+                return result;
+            }
+        }
         List<VO> transOneVOs = getTransOneVOs(result);
         for (VO transOneVO : transOneVOs) {
             transService.transOne(transOneVO);
@@ -74,6 +86,9 @@ public class TransUtil {
     public static Object createProxyForJackson(Object obj) throws IllegalAccessException, InstantiationException {
         if (obj == null) {
             return null;
+        }
+        if (checkIsVOCollection(obj)) {
+            return  createVOProxyCollection((Collection) obj);
         }
         Object result = obj;
         List<Field> fields = ReflectUtils.getAllField(obj);
