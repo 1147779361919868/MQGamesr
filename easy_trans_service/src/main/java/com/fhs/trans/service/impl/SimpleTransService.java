@@ -60,7 +60,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                 for (String tempPkey : pkeys) {
                     tempTransCache = getTempTransCacheMap(tempTrans, tempPkey);
                     if (tempTransCache == null) {
-                        LOGGER.error("auto trans缓存未命中:" + tempTrans.target().getName() + "_" + tempPkey);
+                        LOGGER.error(this.getClass().getName() + "缓存未命中:" + tempTrans.target().getName() + "_" + tempPkey);
                         continue;
                     }
                     // 比如学生表  可能有name和age 2个字段
@@ -71,7 +71,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             } else {
                 transCache = getTempTransCacheMap(tempTrans, pkey);
                 if (transCache == null) {
-                    LOGGER.error("auto trans缓存未命中:" + tempTrans.target().getName() + "_" + pkey);
+                    LOGGER.error(this.getClass().getName() + "缓存未命中:" + tempTrans.target().getName() + "_" + pkey);
                     continue;
                 }
             }
