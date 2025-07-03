@@ -13,155 +13,79 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import static com.fhs.core.trans.util.ReflectUtils.getAllField;
+
 @Slf4j
 public class TransUtil {
 
 
-    public static Object transResult(Object result, TransService transService) {
-        if(result ==null){
+    /**
+     * 翻译集合
+     *
+     * @param object       被翻译的对象
+     * @param transService
+     * @param isProxy
+     * @return
+     */
+    public static Collection transBatch(Object object, TransService transService, boolean isProxy) throws IllegalAccessException, InstantiationException {
+        Collection param = (Collection) object;
+        if (param == null) {
             return null;
         }
-        if(result instanceof Collection){
-            if(((Collection)result).isEmpty()){
-                return result;
-            }
-            if(((Collection)result).iterator().next() instanceof VO){
-                transService.transMore((List<? extends VO>) result);
-                return result;
-            }
+        if (param.isEmpty()) {
+            return param;
         }
-        List<VO> transOneVOs = getTransOneVOs(result);
-        for (VO transOneVO : transOneVOs) {
-            transService.transOne(transOneVO);
-        }
-        List<List<VO>> voLists = getTransMoreVOS(result);
-        for (List<VO> voList : voLists) {
-            // 保证集合里的数据是vo
-            if (!voList.isEmpty() && voList.get(0) instanceof VO) {
-                transService.transMore(voList);
+        boolean isVo = false;
+        if (param.iterator().next() instanceof VO) {
+            transService.transMore(new ArrayList<>(param));
+            isVo = true;
+        } else {
+            for (Object tempObject : param) {
+                transOne(tempObject, transService, isProxy);
             }
         }
-        return result;
-    }
-
-    /**
-     * 获取单个vo
-     *
-     * @param proceed
-     * @return
-     */
-    private static List<VO> getTransOneVOs(Object proceed) {
-        List<VO> result = new ArrayList<>();
-        if (proceed == null) {
-            return result;
+        if (!isProxy || (!isVo)) {
+            return (Collection) object;
         }
-        if (VO.class.isAssignableFrom(proceed.getClass())) {
-            result.add((VO) proceed);
-        }
-        List<Field> fields = ReflectUtils.getAllField(proceed);
-        VO vo = null;
-        for (Field field : fields) {
-            if (checkFieldIsVO(field, proceed)) {
-                try {
-                    field.setAccessible(true);
-                    vo = (VO) field.get(proceed);
-                    if (vo != null) {
-                        result.add(vo);
-                    }
-                } catch (IllegalAccessException e) {
-                    log.error("获取值错误", e);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 创建代理对象
-     *
-     * @param obj
-     * @return
-     */
-    public static Object createProxyForJackson(Object obj) throws IllegalAccessException, InstantiationException {
-        if (obj == null) {
-            return null;
-        }
-        if (checkIsVOCollection(obj)) {
-            return  createVOProxyCollection((Collection) obj);
-        }
-        Object result = obj;
-        List<Field> fields = ReflectUtils.getAllField(obj);
-        VO vo = null;
-        for (Field field : fields) {
-            field.setAccessible(true);
-            if (checkFieldIsVO(field, obj)) {
-                try {
-                    vo = (VO) field.get(obj);
-                    if (vo != null) {
-                        field.set(obj, createProxyVoForJackson(vo));
-                    }
-                } catch (IllegalAccessException e) {
-                    log.error("获取值错误", e);
-                }
-            } else if (checkIsVOCollection(field.get(obj))) {//如果是vo集合则创建vo集合
-                field.set(obj, createVOProxyCollection((Collection) field.get(obj)));
-            }
-        }
-        if (obj instanceof VO) {
-            result = createProxyVoForJackson((VO) obj);
-        }
-        if (checkIsVOCollection(obj)) {
-            result = createVOProxyCollection((Collection) obj);
-        }
-        return result;
-    }
-
-    /**
-     * 创建vo代理集合
-     *
-     * @param collection
-     * @return
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     */
-    public static Collection createVOProxyCollection(Collection collection) throws InstantiationException, IllegalAccessException {
         Collection result = null;
-        if(collection instanceof List){
+        if (param instanceof List) {
             result = new ArrayList();
-        }else if(collection instanceof Set){
+        } else if (param instanceof Set) {
             result = new HashSet();
-        }else{
-            return collection;
+        } else {
+            return param;
         }
-        for (Object vo : collection) {
+        for (Object vo : param) {
             result.add(createProxyVoForJackson((VO) vo));
         }
         return result;
     }
 
-    /**
-     * 判断一个对象是不是vo集合
-     *
-     * @param obj
-     * @return
-     */
-    public static boolean checkIsVOCollection(Object obj) {
-        if (obj == null) {
-            return false;
+
+    public static Object transOne(Object object, TransService transService, boolean isProxy) throws IllegalAccessException, InstantiationException {
+        if (object == null) {
+            return null;
         }
-        if (obj instanceof Collection) {
-            Collection collection = (Collection) obj;
-            if (collection.isEmpty()) {
-                return false;
-            }
-            Object canVo = collection.iterator().next();
-            if (canVo instanceof VO) {
-                return true;
+        boolean isVo = false;
+        if (object instanceof VO) {
+            transService.transOne((VO) object);
+            isVo = true;
+        } else if (object instanceof Collection) {
+            return transBatch(object, transService, isProxy);
+        } else if (object.getClass().getName().startsWith("java.")) {
+            return object;
+        } else {
+            List<Field> fields = ReflectUtils.getAllField(object);
+            Object tempObj = null;
+            for (Field field : fields) {
+                field.setAccessible(true);
+                tempObj = field.get(object);
+                field.set(object, transOne(tempObj, transService, isProxy));
             }
         }
-        return false;
+        return (isProxy && isVo) ? createProxyVoForJackson((VO) object) : object;
     }
+
 
     /**
      * 创建新 vo
@@ -173,15 +97,15 @@ public class TransUtil {
         if (vo == null || vo.getTransMap() == null) {
             return vo;
         }
-
-        Map<String, Class> propertyMap = new HashMap<String, Class>();
-        for (String key : vo.getTransMap().keySet()) {
-            propertyMap.put(key, String.class);
-        }
         vo.getTransMap().put("transMap", null);
         try {
             Map transMap = vo.getTransMap();
-            return PropertyAppender.generate(vo, transMap);
+            Map copyMap = new HashMap();
+            for (Object key : transMap.keySet()) {
+                copyMap.put(key, transMap.get(key));
+            }
+            copyMap.put("transMap", null);
+            return PropertyAppender.generate(vo, copyMap);
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -191,122 +115,6 @@ public class TransUtil {
     }
 
 
-    /**
-     * 判断一个是否vo
-     *
-     * @param field
-     * @return
-     */
-    public static boolean checkFieldIsVO(Field field, Object proceed) {
-        Class clazz = getFieldClass(field, proceed);
-        if (clazz == null) {
-            return false;
-        }
-        if (VO.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * 获取trans more vos
-     *
-     * @param proceed
-     * @return
-     */
-    private static List<List<VO>> getTransMoreVOS(Object proceed) {
-        List<List<VO>> result = new ArrayList<>();
-        if (proceed == null) {
-            return result;
-        }
-        if (Collection.class.isAssignableFrom(proceed.getClass())) {
-            result.add(new ArrayList<>((Collection) proceed));
-        }
-        List<Field> fields = ReflectUtils.getAllField(proceed);
-        List voList = null;
-        for (Field field : fields) {
-            if (checkFieldIsCollection(field, proceed)) {
-                field.setAccessible(true);
-                try {
-                    Collection collection = (Collection) field.get(proceed);
-                    if (collection == null || collection.isEmpty()) {
-                        continue;
-                    }
-                    voList = new ArrayList();
-                    voList.addAll(collection);
-                    result.add(voList);
-                } catch (IllegalAccessException e) {
-                    log.error("", e);
-                }
-            }
-        }
-        return result;
-    }
-
-    public static Class getFieldClass(Field field, Object proceed) {
-        String className = field.getGenericType().getTypeName().replace("class ", "");
-        if ("T".equals(className)) {
-            try {
-                field.setAccessible(true);
-                Object obj = field.get(proceed);
-                if (obj == null) {
-                    return Object.class;
-                }
-                if (VO.class.isAssignableFrom(obj.getClass())) {
-                    return DefaultVO.class;
-                }
-                if (Collection.class.isAssignableFrom(obj.getClass())) {
-                    return List.class;
-                }
-            } catch (IllegalAccessException e) {
-                log.error("", e);
-                return Object.class;
-            }
-        }
-        //不支持数组 基础数据类型和内部类
-        if (className.contains("<")) {
-            className = className.substring(0, className.indexOf("<"));
-        }
-        //不支持数组 基础数据类型和内部类
-        if (className.contains("/") ||
-                (Character.isLowerCase(className.charAt(0)) && (!className.contains(".")))
-                || className.contains("$")) {
-            return null;
-        }
-
-        if (className.contains("]")) {
-            className = className.substring(0, className.indexOf("["));
-        }
-        if (className.contains("]")) {
-            className = className.substring(0, className.indexOf("<"));
-        }
-
-        try {
-            Class clazz = Class.forName(className);
-            return clazz;
-        } catch (ClassNotFoundException e) {
-            log.error("", e);
-        }
-        return null;
-    }
-
-    /**
-     * 判断一个字段是否是集合
-     *
-     * @param field
-     * @return
-     */
-    public static boolean checkFieldIsCollection(Field field, Object proceed) {
-        Class clazz = getFieldClass(field, proceed);
-        if (clazz == null) {
-            return false;
-        }
-        if (Collection.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-        return false;
-    }
 }
 
 /**

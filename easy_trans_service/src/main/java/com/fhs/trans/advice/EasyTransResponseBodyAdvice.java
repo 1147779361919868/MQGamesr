@@ -32,16 +32,11 @@ public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
 
     @Override
     public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        Object result = TransUtil.transResult(o, transService);
-        // 开启平铺模式
-        if(isEnableTile){
-            try {
-                result = TransUtil.createProxyForJackson(result);
-            } catch (IllegalAccessException e) {
-               log.error("createProxyForJackson error",e);
-            } catch (InstantiationException e) {
-                log.error("createProxyForJackson error",e);
-            }
+        Object result = null;
+        try {
+            result = TransUtil.transOne(o,transService,isEnableTile);
+        }catch (Exception e){
+            log.error("翻译错误",e);
         }
         return result;
     }

@@ -28,10 +28,15 @@ public class TransMethodResultAop {
         Object proceed = null;
         try {
             proceed = joinPoint.proceed();
-            return TransUtil.transResult(proceed, transService);
         } catch (Throwable e) {
             throw e;
         }
+        try {
+           return TransUtil.transOne(proceed,transService,false);
+        } catch (Exception e) {
+            log.error("翻译错误",e);
+        }
+        return proceed;
     }
 }
 
