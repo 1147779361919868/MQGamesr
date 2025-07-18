@@ -115,8 +115,8 @@ public class Student implements TransPojo {
 
 # 参与贡献和技术支持
 
- 如果遇到使用问题可以加QQ群:976278956
-
+ 如果遇到使用问题可以加QQ群:976278956   
+ 如果你们使用了此插件，请留下单位名称。
 # 示例项目
 
 https://gitee.com/fhs-opensource/easy_trans_springboot_demo
@@ -124,3 +124,11 @@ https://gitee.com/fhs-opensource/easy_trans_springboot_demo
 # 插件文档
 
 https://gitee.com/fhs-opensource/easy_trans/wikis/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B
+
+# 已经使用此插件的企业
+1、陕西小伙伴网络科技有限公司   
+2、中软国际云智能业务集团   
+3、深圳市易流科技股份有限公司   
+4、陕西逐道科技有限公司
+5、深圳市易联联盟科技有限公司
+
