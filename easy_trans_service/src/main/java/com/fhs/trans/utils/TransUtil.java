@@ -78,9 +78,17 @@ public class TransUtil {
             List<Field> fields = ReflectUtils.getAllField(object);
             Object tempObj = null;
             for (Field field : fields) {
+                if(java.lang.reflect.Modifier.isFinal(field.getModifiers()) || java.lang.reflect.Modifier.isStatic(field.getModifiers())){
+                    continue;
+                }
                 field.setAccessible(true);
                 tempObj = field.get(object);
-                field.set(object, transOne(tempObj, transService, isProxy));
+                try{
+                    field.set(object, transOne(tempObj, transService, isProxy));
+                }catch (Exception e){
+                    log.error("如果字段set错误，请反馈给easytrans开发者",e);
+                }
+
             }
         }
         return (isProxy && isVo) ? createProxyVoForJackson((VO) object) : object;
