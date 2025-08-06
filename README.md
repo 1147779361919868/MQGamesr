@@ -56,7 +56,8 @@ easy-trans:
    is-enable-redis: true 
    #启用全局翻译(拦截所有responseBody进行自动翻译)，如果对于性能要求很高可关闭此配置
    is-enable-global: true 
-  
+   #启用平铺模式
+   is-enable-tile: true
 spring:#如果用到redis配置redis连接
   redis:
     host: 192.168.0.213
