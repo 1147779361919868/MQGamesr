@@ -37,12 +37,30 @@ public interface RedisCacheService<E> {
     Long remove(String key);
 
     /**
+     * 删除一个key
+     *
+     * @param key key
+     * @return 影响的结果数
+     */
+    Long removeStr(String key);
+
+
+    /**
      * 检查key是否已经存在
      *
      * @param key
      * @return
      */
     boolean exists(String key);
+
+
+    /**
+     * 检查key是否已经存在
+     *
+     * @param key
+     * @return
+     */
+    boolean existsStr(String key);
 
     /**
      * 添加数组到缓存中
@@ -74,7 +92,7 @@ public interface RedisCacheService<E> {
      * @param key  key
      * @param list 需要添加的集合数据
      */
-    void addSet(String key, List<E> list);
+    void addList(String key, List<E> list);
 
     /**
      * 判断set中有无value 有true
@@ -150,13 +168,14 @@ public interface RedisCacheService<E> {
      */
     boolean expire(String key, int timeout);
 
+
     /**
-     * 获取key超时时间
+     * 设置一个key在 timeout 秒后超时
      *
-     * @param key key
-     * @return key的超时时间
+     * @param key     key
+     * @param timeout 超时时间  秒
      */
-    Long getExpire(String key);
+    boolean expireStr(String key, int timeout);
 
     /**
      * 从队列头插入值
@@ -227,4 +246,11 @@ public interface RedisCacheService<E> {
      * @param message
      */
     void convertAndSend(String channel, String message);
+
+    /**
+     * 模糊匹配key
+     *
+     * @Param: [key]
+     */
+    Set<String> getFuzzy(String key);
 }

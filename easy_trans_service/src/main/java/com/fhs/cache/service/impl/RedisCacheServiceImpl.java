@@ -3,15 +3,15 @@ package com.fhs.cache.service.impl;
 import com.fhs.cache.service.RedisCacheService;
 import com.fhs.common.constant.Constant;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -31,10 +31,10 @@ public class RedisCacheServiceImpl<E> implements RedisCacheService<E> {
     /**
      * redisTemplate
      */
-
+    @Resource(name = "redisTemplate")
     private RedisTemplate<String, E> redisTemplate;
 
-
+    @Autowired
     private RedisTemplate<String, String> strRedisTemplate;
 
     private Lock lock = new ReentrantLock();// 基于底层IO阻塞考虑
@@ -74,6 +74,22 @@ public class RedisCacheServiceImpl<E> implements RedisCacheService<E> {
     }
 
     @Override
+    public Long removeStr(final String key) {
+        if (!existsStr(key)) {
+            return 0l;
+        }
+        return strRedisTemplate.execute(new RedisCallback<Long>() {
+            @Override
+            public Long doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                long result = 0;
+                result = connection.del(key.getBytes());
+                return result;
+            }
+        });
+    }
+
+    @Override
     public boolean exists(final String key) {
         return redisTemplate.execute(new RedisCallback<Boolean>() {
             public Boolean doInRedis(RedisConnection connection)
@@ -84,10 +100,20 @@ public class RedisCacheServiceImpl<E> implements RedisCacheService<E> {
     }
 
     @Override
+    public boolean existsStr(String key) {
+        return strRedisTemplate.execute(new RedisCallback<Boolean>() {
+            public Boolean doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                return connection.exists(key.getBytes());
+            }
+        });
+    }
+
+    @Override
     public void addSet(String key, E[] objs) {
-        ListOperations<String, E> list = redisTemplate.opsForList();
+        SetOperations<String, E> set = redisTemplate.opsForSet();
         for (E obj : objs) {
-            list.leftPush(key, obj);
+            set.add(key, obj);
         }
     }
 
@@ -104,8 +130,11 @@ public class RedisCacheServiceImpl<E> implements RedisCacheService<E> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void addSet(String key, List<E> objSet) {
-        this.addSet(key, (E[]) objSet.toArray());
+    public void addList(String key, List<E> objList) {
+        ListOperations<String, E> list = redisTemplate.opsForList();
+        for (E obj : objList) {
+            list.leftPush(key, obj);
+        }
     }
 
     @Override
@@ -120,7 +149,7 @@ public class RedisCacheServiceImpl<E> implements RedisCacheService<E> {
 
     @Override
     public boolean addStr(final String key, final String value) {
-        if (this.exists(key)) {
+        if (this.existsStr(key)) {
             this.updateStr(key, value);
         }
         boolean result = strRedisTemplate.execute(new RedisCallback<Boolean>() {
@@ -213,13 +242,21 @@ public class RedisCacheServiceImpl<E> implements RedisCacheService<E> {
                 return (long) Constant.DEFEAT_CODE;
             }
         }) == Constant.SUCCESS_CODE;
-
-
     }
 
     @Override
-    public Long getExpire(String key) {
-        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
+    public boolean expireStr(final String key, final int timeout) {
+        return strRedisTemplate.execute(new RedisCallback<Long>() {
+            @Override
+            public Long doInRedis(RedisConnection connection)
+                    throws DataAccessException {
+                if (connection.expire(key.getBytes(), timeout)) {
+                    return (long) Constant.SUCCESS_CODE;
+                }
+                ;
+                return (long) Constant.DEFEAT_CODE;
+            }
+        }) == Constant.SUCCESS_CODE;
     }
 
     /**
@@ -312,6 +349,19 @@ public class RedisCacheServiceImpl<E> implements RedisCacheService<E> {
                 return null;
             }
         });
+    }
+
+    @Override
+    public Set<String> getFuzzy(String matchKey) {
+        Set<String> keys = redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+            Set<String> keysTmp = new HashSet<>();
+            Cursor<byte[]> cursor = connection.scan(new ScanOptions.ScanOptionsBuilder().match("*" + matchKey + "*").count(1000).build());
+            while (cursor.hasNext()) {
+                keysTmp.add(new String(cursor.next()));
+            }
+            return keysTmp;
+        });
+        return keys;
     }
 
 }
