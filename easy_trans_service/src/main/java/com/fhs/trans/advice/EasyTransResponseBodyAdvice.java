@@ -38,6 +38,6 @@ public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
         }catch (Exception e){
             log.error("翻译错误",e);
         }
-        return result;
+        return result == null ? o : result;
     }
 }
