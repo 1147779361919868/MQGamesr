@@ -1,11 +1,14 @@
 package com.fhs.trans.service.impl;
 
+import com.fhs.cache.service.FuncGetter;
 import com.fhs.common.constant.Constant;
+import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
+import com.fhs.exception.ParamException;
 import com.fhs.trans.fi.LocaleGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,9 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
 
     }
 
+    public Map<String, String> getDictionaryTransMap() {
+        return dictionaryTransMap;
+    }
 
     @Override
     public void transOne(VO obj, List<Field> toTransList) {
@@ -67,7 +73,17 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
                     dicCodeList.add(dictionaryTransMap.get(getMapKey(key, dicCode)));
                 }
             }
-            String transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
+            String transResult = null;
+            if (!StringUtil.isEmpty(tempTrans.customeBeanFuncName())) {
+                final Object bean = SpringContextUtil.getBean(tempTrans.customeBeanFuncName());
+                if (bean == null || !(bean instanceof FuncGetter)) {
+                    throw new ParamException("无法找到正确的bean:" + tempTrans.customeBeanFuncName());
+                }
+                FuncGetter funcGetter = (FuncGetter) bean;
+                transResult = funcGetter.get(tempTrans, dicCodes);
+            } else {
+                transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
+            }
             if (obj.getTransMap() != null) {
                 obj.getTransMap().put(tempField.getName() + "Name", transResult);
             }
