@@ -74,6 +74,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
                 }
             }
             String transResult = null;
+            //customeBeanFuncName有值的话 调用用户自定义的对应的接口
             if (!StringUtil.isEmpty(tempTrans.customeBeanFuncName())) {
                 final Object bean = SpringContextUtil.getBean(tempTrans.customeBeanFuncName());
                 if (bean == null || !(bean instanceof FuncGetter)) {

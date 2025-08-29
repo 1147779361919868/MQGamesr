@@ -5,10 +5,12 @@ import com.fhs.core.trans.anno.Trans;
 import java.io.Serializable;
 
 /**
- * @description:
- * @author：liangbaikai
- * @date: 2021-10-21
- * @Copyright：
+ * 自定义获取值的条件下需实现此接口
+ *
+ * @author liangbaikai
+ * @version [版本号, 2021年10月22日]
+ * @see [相关类/方法]
+ * @since [产品/模块版本]
  */
 @FunctionalInterface
 public interface FuncGetter {
