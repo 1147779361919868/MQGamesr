@@ -73,6 +73,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
                     dicCodeList.add(dictionaryTransMap.get(getMapKey(key, dicCode)));
                 }
             }
+
             String transResult = null;
             //customeBeanFuncName有值的话 调用用户自定义的对应的接口
             if (!StringUtil.isEmpty(tempTrans.customeBeanFuncName())) {
