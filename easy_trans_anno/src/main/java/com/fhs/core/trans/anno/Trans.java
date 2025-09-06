@@ -79,4 +79,11 @@ public @interface Trans {
      * @return
      */
     String targetClassName() default "";
+
+    /**
+     * 自定义的函数名(此名称需要被spring托管 并实现FuncGetter)
+     * @return
+     */
+    String customeBeanFuncName() default "";
+
 }
