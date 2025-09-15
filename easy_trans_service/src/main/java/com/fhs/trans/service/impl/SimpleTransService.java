@@ -29,7 +29,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      */
     private ThreadLocal<Map<String, Map<String, String>>> threadLocalCache = new ThreadLocal<>();
 
-    private SimpleTransDiver transDiver;
+    protected SimpleTransDiver transDiver;
 
     /**
      * 注册翻译驱动

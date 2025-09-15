@@ -35,21 +35,27 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
      */
     private Map<String, String> dictionaryTransMap = new ConcurrentHashMap<>();
 
+    /**
+     * 反向翻译
+     */
+    private Map<String,String> unTransMap = new ConcurrentHashMap<>();
+
     private boolean isOpenI18n;
 
     private LocaleGetter localeGetter;
 
+
     /**
      * 刷新缓存
      *
-     * @param dicTypeCode 字典类型编码
+     * @param dictGroupCode 字典分组编码
      * @param dicMap      字典map
      */
-    public void refreshCache(String dicTypeCode, Map<String, String> dicMap) {
-        dicMap.keySet().forEach(key -> {
-            dictionaryTransMap.put(dicTypeCode + "_" + key, dicMap.get(key));
+    public void refreshCache(String dictGroupCode, Map<String, String> dicMap) {
+        dicMap.keySet().forEach(dictCode -> {
+            dictionaryTransMap.put(dictGroupCode + "_" + dictCode, dicMap.get(dictCode));
+            unTransMap.put(dictGroupCode + "_" + dicMap.get(dictCode),dictCode);
         });
-
     }
 
     public Map<String, String> getDictionaryTransMap() {
@@ -130,6 +136,10 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
     public void openI18n(LocaleGetter localeGetter) {
         this.isOpenI18n = true;
         this.localeGetter = localeGetter;
+    }
+
+    public Map<String,String> getUnTransMap(){
+        return this.unTransMap;
     }
 
 }

@@ -125,17 +125,6 @@ public class TransUtil {
 
 }
 
-/**
- * 实际上没什么用，只是用来判断T是否是VO的时候返回此类型
- */
-class DefaultVO implements VO {
-
-    @Override
-    public Map<String, String> getTransMap() {
-        return null;
-    }
-}
-
 
 /**
  * 给对象加字段
