@@ -1,6 +1,7 @@
 package com.fhs.cache.service;
 
 import com.fhs.core.trans.anno.Trans;
+import com.fhs.core.trans.vo.VO;
 
 import java.io.Serializable;
 
@@ -14,6 +15,12 @@ import java.io.Serializable;
  */
 @FunctionalInterface
 public interface FuncGetter {
-
-    String get(Trans trans, Serializable value);
+    /**
+     * 当前翻译字段相关信息
+     * @param trans 当前的注解
+     * @param value 当前字段的值
+     * @param obj  当前字段的对象
+     * @return     当前字段需要翻译后的结果值
+     */
+    String get(Trans trans, Serializable value, VO obj);
 }

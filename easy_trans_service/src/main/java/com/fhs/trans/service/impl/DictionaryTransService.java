@@ -38,7 +38,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
     /**
      * 反向翻译
      */
-    private Map<String,String> unTransMap = new ConcurrentHashMap<>();
+    private Map<String, String> unTransMap = new ConcurrentHashMap<>();
 
     private boolean isOpenI18n;
 
@@ -49,12 +49,12 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
      * 刷新缓存
      *
      * @param dictGroupCode 字典分组编码
-     * @param dicMap      字典map
+     * @param dicMap        字典map
      */
     public void refreshCache(String dictGroupCode, Map<String, String> dicMap) {
         dicMap.keySet().forEach(dictCode -> {
             dictionaryTransMap.put(dictGroupCode + "_" + dictCode, dicMap.get(dictCode));
-            unTransMap.put(dictGroupCode + "_" + dicMap.get(dictCode),dictCode);
+            unTransMap.put(dictGroupCode + "_" + dicMap.get(dictCode), dictCode);
         });
     }
 
@@ -88,7 +88,8 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
                     throw new ParamException("无法找到正确的bean:" + tempTrans.customeBeanFuncName());
                 }
                 FuncGetter funcGetter = (FuncGetter) bean;
-                transResult = funcGetter.get(tempTrans, dicCodes);
+                //obj 传进去  这个翻译的值可能依赖这个对象的某些上下文信息 或其他字段 更灵活
+                transResult = funcGetter.get(tempTrans, dicCodes, obj);
             } else {
                 transResult = dicCodeList.size() > Constant.ZERO ? StringUtil.getStrForIn(dicCodeList, false) : "";
             }
@@ -138,7 +139,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
         this.localeGetter = localeGetter;
     }
 
-    public Map<String,String> getUnTransMap(){
+    public Map<String, String> getUnTransMap() {
         return this.unTransMap;
     }
 
