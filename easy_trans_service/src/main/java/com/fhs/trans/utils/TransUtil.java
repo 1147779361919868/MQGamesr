@@ -105,7 +105,6 @@ public class TransUtil {
         if (vo == null || vo.getTransMap() == null) {
             return vo;
         }
-        vo.getTransMap().put("transMap", null);
         try {
             Map transMap = vo.getTransMap();
             Map copyMap = new HashMap();
