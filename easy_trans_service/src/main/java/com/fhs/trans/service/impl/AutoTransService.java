@@ -276,9 +276,12 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
         for (int i = 0; i < vos.size(); i++) {
             po = vos.get(i);
             pkeyVal = po.getPkey();
-            localTransCacheMap.put(namespace + "_" + pkeyVal, createTempTransCacheMap(po, autoTrans));
-            if (autoTrans.useCache() && autoTrans.useRedis()) {
+            //如果使用redis则给redis放
+            if (autoTrans.useRedis()) {
                 this.getRedisTransCache().put(namespace + "_" + pkeyVal, createTempTransCacheMap(po, autoTrans));
+            }else{
+                //否则给本地缓存放
+                localTransCacheMap.put(namespace + "_" + pkeyVal, createTempTransCacheMap(po, autoTrans));
             }
         }
         LOGGER.info("刷新auto-trans缓存完成:" + namespace);
@@ -325,7 +328,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             return localTransCacheMap.get(namespace + "_" + pkey);
         }
         //如果注解为空,代表可能是其他的服务提供的翻译,尝试去redis获取缓存
-        else if (autoTrans == null) {
+        else if (autoTrans == null || autoTrans.useRedis()) {
             Map<String, String> redisCacheResult = this.getRedisTransCache().get(namespace + "_" + pkey);
             //如果获取到了返回
             if (redisCacheResult != null) {
@@ -334,10 +337,6 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             //redis获取不到返回空map
             return new HashMap<>();
         } else {
-            if (autoTrans == null) {
-                LOGGER.warn("namespace对应的service没有使用autotrans注解标记:" + namespace);
-                return new HashMap<>();
-            }
             //如果强调使用缓存,则可能是还没刷新进来,直接返回空map,前端在刷新一下就好了
             if (autoTrans.useCache()) {
                 return new HashMap<>();
