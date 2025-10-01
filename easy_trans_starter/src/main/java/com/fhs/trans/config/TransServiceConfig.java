@@ -90,6 +90,15 @@ public class TransServiceConfig {
     }
 
     /**
+     * 枚举翻译
+     * @return
+     */
+    @Bean
+    public EnumTransService enumTransService() {
+        return new EnumTransService();
+    }
+
+    /**
      * 简单翻译
      *
      * @return

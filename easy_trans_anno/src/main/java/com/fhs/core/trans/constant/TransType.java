@@ -27,4 +27,9 @@ public interface TransType {
      * 远程翻译
      */
     String RPC = "rpc";
+
+    /**
+     * 枚举
+     */
+    String ENUM = "enum";
 }
