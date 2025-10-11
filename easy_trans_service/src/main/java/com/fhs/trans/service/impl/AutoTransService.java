@@ -112,7 +112,8 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                     }
                 }
             } else {
-                transCache = getTempTransCacheMap(namespace, pkey);
+                //如果不是多个保证原汁原味 的原来的什么类型就是什么类型 而不是string
+                transCache = getTempTransCacheMap(namespace, ReflectUtils.getValue(obj, tempField.getName()));
                 if (transCache == null) {
                     LOGGER.error("auto trans缓存未命中:" + namespace + "_" + pkey);
                     continue;
@@ -145,7 +146,8 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
     @Override
     public void transMore(List<? extends VO> objList, List<Field> toTransList) {
         threadLocalCache.set(new HashMap<>());
-        // 由于一些表数据比较多，所以部分数据不是从缓存取的，是从db先放入缓存的，翻译完了释放掉本次缓存的数据
+        // 根据namespace区分
+        Map<String,List<Field>> namespaceFieldsGroupMap = new HashMap<>();
         for (Field tempField : toTransList) {
             tempField.setAccessible(true);
             Trans tempTrans = tempField.getAnnotation(Trans.class);
@@ -162,27 +164,41 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             if (autoTransSett.useCache()) {
                 continue;
             }
+            List<Field> fields = namespaceFieldsGroupMap.containsKey(namespace) ? namespaceFieldsGroupMap.get(namespace) : new ArrayList<>();
+            fields.add(tempField);
+            namespaceFieldsGroupMap.put(namespace,fields);
+        }
+
+        // 由于一些表数据比较多，所以部分数据不是从缓存取的，是从db先放入缓存的，翻译完了释放掉本次缓存的数据
+        for (String namespace : namespaceFieldsGroupMap.keySet()) {
             Set<Object> ids = new HashSet<>();
+            final List<Field> fields = namespaceFieldsGroupMap.get(namespace);
             objList.forEach(obj -> {
-                try {
-                    Object tempId = tempField.get(obj);
-                    if (CheckUtils.isNotEmpty(tempId)) {
-                        String pkey = ConverterUtils.toString(tempId).replace("[", "").replace("]", "");
-                        if (pkey.contains(",")) {
-                            String[] pkeys = pkey.split(",");
-                            for (String id : pkeys) {
-                                ids.add(id);
+                for (Field field : fields) {
+                    try {
+                        Object tempId = field.get(obj);
+                        if (CheckUtils.isNotEmpty(tempId)) {
+                            String pkey = ConverterUtils.toString(tempId).replace("[", "").replace("]", "");
+                            if (pkey.contains(",")) {
+                                String[] pkeys = pkey.split(",");
+                                for (String id : pkeys) {
+                                    ids.add(id);
+                                }
+                            } else {
+                                ids.add(tempId);
                             }
-                        } else {
-                            ids.add(pkey);
                         }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
                 }
             });
             if (!ids.isEmpty()) {
                 List<VO> dbDatas = baseServiceMap.get(namespace).findByIds(new ArrayList<>(ids));
+                AutoTrans autoTransSett = this.transSettMap.get(namespace);
+                if (autoTransSett.useCache()) {
+                    continue;
+                }
                 for (VO vo : dbDatas) {
                     threadLocalCache.get().put(namespace + "_" + vo.getPkey(), createTempTransCacheMap(vo, autoTransSett));
                 }
@@ -254,7 +270,6 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
      * @param namespace namespace
      */
     public void refreshOneNamespace(String namespace) {
-        LOGGER.info("开始刷新auto-trans缓存:" + namespace);
         if (!this.transSettMap.containsKey(namespace)) {
             LOGGER.info("本系统无需刷新此缓存namespace:" + namespace);
             return;
@@ -264,6 +279,7 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
         if (!autoTrans.useCache()) {
             return;
         }
+        LOGGER.info("开始刷新auto-trans缓存:" + namespace);
         List<VO> vos = this.baseServiceMap.get(namespace).select();
         if (vos == null || vos.isEmpty()) {
             return;

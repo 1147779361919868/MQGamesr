@@ -69,7 +69,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     }
                 }
             } else {
-                transCache = getTempTransCacheMap(tempTrans, pkey);
+                transCache = getTempTransCacheMap(tempTrans, ReflectUtils.getValue(obj, tempField.getName()));
                 if (transCache == null) {
                     LOGGER.error(this.getClass().getName() + "缓存未命中:" + tempTrans.target().getName() + "_" + pkey);
                     continue;
@@ -100,31 +100,43 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     @Override
     public void transMore(List<? extends VO> objList, List<Field> toTransList) {
         threadLocalCache.set(new HashMap<>());
-        // 由于一些表数据比较多，所以部分数据不是从缓存取的，是从db先放入缓存的，翻译完了释放掉本次缓存的数据
+        // 根据namespace区分
+        Map<Class,List<Field>> namespaceFieldsGroupMap = new HashMap<>();
         for (Field tempField : toTransList) {
             tempField.setAccessible(true);
             Trans tempTrans = tempField.getAnnotation(Trans.class);
-            Set<String> ids = new HashSet<>();
+            List<Field> fields = namespaceFieldsGroupMap.containsKey(tempTrans.target()) ? namespaceFieldsGroupMap.get(tempTrans.target()) : new ArrayList<>();
+            fields.add(tempField);
+            namespaceFieldsGroupMap.put(tempTrans.target(),fields);
+        }
+        // 合并相同的一次in过来
+        for (Class target : namespaceFieldsGroupMap.keySet()) {
+            final List<Field> fields = namespaceFieldsGroupMap.get(target);
+            Trans tempTrans = fields.get(0).getAnnotation(Trans.class);
+            Set<Object> ids = new HashSet<>();
             objList.forEach(obj -> {
-                try {
-                    Object tempId = tempField.get(obj);
-                    if (CheckUtils.isNotEmpty(tempId)) {
-                        String pkey = ConverterUtils.toString(tempId).replace("[", "").replace("]", "");
-                        if (pkey.contains(",")) {
-                            String[] pkeys = pkey.split(",");
-                            for (String id : pkeys) {
-                                ids.add(id);
+                for (Field field : fields) {
+                    try {
+                        Object tempId = field.get(obj);
+                        if (CheckUtils.isNotEmpty(tempId)) {
+                            String pkey = ConverterUtils.toString(tempId).replace("[", "").replace("]", "");
+                            if (pkey.contains(",")) {
+                                String[] pkeys = pkey.split(",");
+                                for (String id : pkeys) {
+                                    ids.add(id);
+                                }
+                            } else {
+                                ids.add(tempId);
                             }
-                        } else {
-                            ids.add(pkey);
                         }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                     }
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
                 }
+
             });
             if (!ids.isEmpty()) {
-                List<? extends VO> dbDatas = findByIds(new ArrayList<String>(ids), tempTrans);
+                List<? extends VO> dbDatas = findByIds(new ArrayList<Object>(ids), tempTrans);
                 for (VO vo : dbDatas) {
                     threadLocalCache.get().put(tempTrans.target().getName() + "_" + vo.getPkey(),
                             createTempTransCacheMap(vo, tempTrans));
@@ -144,7 +156,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param tempTrans
      * @return
      */
-    public List<? extends VO> findByIds(List<String> ids, Trans tempTrans) {
+    public List<? extends VO> findByIds(List ids, Trans tempTrans) {
         return transDiver.findByIds(ids, tempTrans.target());
     }
 
@@ -155,8 +167,8 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param tempTrans
      * @return
      */
-    public VO findById(String id, Trans tempTrans) {
-        return transDiver.findById(id, tempTrans.target());
+    public VO findById(Object id, Trans tempTrans) {
+        return transDiver.findById((Serializable)id, tempTrans.target());
     }
 
     /**
@@ -166,7 +178,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param pkey      主键
      * @return 缓存
      */
-    private Map<String, String> getTempTransCacheMap(Trans tempTrans, String pkey) {
+    private Map<String, String> getTempTransCacheMap(Trans tempTrans, Object pkey) {
         if (this.threadLocalCache.get() == null) {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();

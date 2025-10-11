@@ -49,7 +49,7 @@ public interface VO {
             clearTransCache();
         }
         Map<String, Map<String, String>> cache = TRANS_MAP_CACHE.get();
-        String cacheKey = this.getClass().getName() + "_" + this.hashCode();
+        String cacheKey = this.getClass().getName() + "_" + this.getPkey();
         if (cache.containsKey(cacheKey)) {
             return cache.get(cacheKey);
         }

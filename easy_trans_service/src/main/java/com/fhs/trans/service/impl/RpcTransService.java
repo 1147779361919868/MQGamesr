@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -29,7 +30,7 @@ public class RpcTransService extends SimpleTransService {
     private Boolean isEnableCloud;
 
     @Override
-    public List<? extends VO> findByIds(List<String> ids, Trans tempTrans) {
+    public List<? extends VO> findByIds(List ids, Trans tempTrans) {
         //如果没开启springcloud 则走SimpleTransService逻辑
         if(!isEnableCloud){
             try {
@@ -53,11 +54,11 @@ public class RpcTransService extends SimpleTransService {
     }
 
     @Override
-    public VO findById(String id, Trans tempTrans) {
+    public VO findById(Object id, Trans tempTrans) {
         if(!isEnableCloud){
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
-                return transDiver.findById(id, clazz);
+                return transDiver.findById((Serializable)id, clazz);
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName() );
             }
