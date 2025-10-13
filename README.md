@@ -8,11 +8,11 @@
 
 ![输入图片说明](https://images.gitee.com/uploads/images/2021/0923/192412_492187e6_339743.png "微信截图_20210923192348.png")
 
-easy trans适用于三种场景   
+easy trans适用于四种场景   
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想做表关联查询   
 2   我有一个字典码 sex  和 一个字典值0  我希望能翻译成   男  给客户展示。   
 3   我有一组user id 比如 1，2,3  我希望能展示成 张三,李四,王五 给客户   
-
+4   我有一个枚举，枚举里有一个title字段，我想给前端展示title的值 给客户
 # 食用步骤
 ## 技术经理/架构 需要做的事情
 1 、先把maven 引用加上
@@ -20,7 +20,7 @@ easy trans适用于三种场景
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.1.5</version>
+            <version>1.1.6</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -28,7 +28,7 @@ easy trans适用于三种场景
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.1.5</version>
+            <version>1.1.6</version>
         </dependency>
 ```
   JPA 用户另外还需要加以下扩展：
@@ -36,7 +36,7 @@ easy trans适用于三种场景
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_jpa_extend</artifactId>
-            <version>1.1.5</version>
+            <version>1.1.6</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
@@ -46,10 +46,11 @@ easy trans适用于三种场景
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 ```
+注意：非maven中央仓库更新可能延迟，如果高版本无法引入请尝试切到低一个版本过一天后在切回来。
 2、在yaml中添加如下配置
 ``` YAML
 easy-trans:
-   autotrans:
+   autotrans: # 如果没使用到autotrans可以不配置
        #您的service/dao所在的包 支持通配符比如com.*.**.service.**，他的默认值是com.*.*.service.impl
        package: com.fhs.test.service.**;com.fhs.test.dao.** 
    #启用redis缓存 如果不用redis请设置为false
@@ -108,6 +109,21 @@ public class Student implements TransPojo {
 	//远程翻译，调用其他微服务的数据源进行翻译
 	@Trans(type = TransType.RPC,targetClassName = "com.fhs.test.pojo.School",fields = "schoolName",serviceName = "easyTrans",alias = "middle")
     private String middleSchoolId;
+	
+	// 枚举翻译，返回文科还是理科给前端
+	@Trans(type=TransType.ENUM,key = "desc")
+    private StudentType studentType = StudentType.ARTS;
+
+    public static enum StudentType{
+
+        ARTS("文科"),
+        SCIENCES("理科");
+
+        private String desc;
+        StudentType(String desc){
+            this.desc = desc;
+        }
+    }
 }
 ```
 然后访问你的controller，看返回结果。
