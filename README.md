@@ -46,7 +46,7 @@ easy trans适用于四种场景
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 ```
-注意：非maven中央仓库更新可能延迟，如果高版本无法引入请尝试切到低一个版本过一天后在切回来。
+注意：非maven中央仓库更新可能延迟，如果高版本无法引入请尝试切到低一个版本过一天后在切回来。   
 2、在yaml中添加如下配置
 ``` YAML
 easy-trans:
