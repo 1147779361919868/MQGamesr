@@ -56,4 +56,6 @@ public @interface AutoTrans {
      * @return
      */
     Class<? extends VO> ref() default VO.class;
+
+
 }

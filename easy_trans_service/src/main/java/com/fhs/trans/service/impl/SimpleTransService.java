@@ -7,6 +7,7 @@ import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
+import com.fhs.trans.ds.DataSourceSetter;
 import com.fhs.trans.listener.TransMessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,11 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     private ThreadLocal<Map<String, Map<String, String>>> threadLocalCache = new ThreadLocal<>();
 
     protected SimpleTransDiver transDiver;
+
+    /**
+     * 设置数据源
+     */
+    protected DataSourceSetter dataSourceSetter;
 
     /**
      * 注册翻译驱动
@@ -157,7 +163,10 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @return
      */
     public List<? extends VO> findByIds(List ids, Trans tempTrans) {
-        return transDiver.findByIds(ids, tempTrans.target());
+        return findByIds(()->{
+            return transDiver.findByIds(ids, tempTrans.target());
+        },tempTrans.dataSource());
+
     }
 
     /**
@@ -168,7 +177,9 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @return
      */
     public VO findById(Object id, Trans tempTrans) {
-        return transDiver.findById((Serializable)id, tempTrans.target());
+       return findById(()->{
+            return transDiver.findById((Serializable)id, tempTrans.target());
+        },tempTrans.dataSource());
     }
 
     /**

@@ -2,13 +2,17 @@ package com.fhs.trans.config;
 
 import com.fhs.cache.service.RedisCacheService;
 import com.fhs.cache.service.impl.RedisCacheServiceImpl;
+import com.fhs.common.constant.TransConfig;
 import com.fhs.common.spring.SpringContextUtil;
 import com.fhs.trans.advice.EasyTransResponseBodyAdvice;
 import com.fhs.trans.aop.TransMethodResultAop;
 import com.fhs.trans.controller.TransProxyController;
+import com.fhs.trans.ds.DataSourceSetter;
 import com.fhs.trans.listener.TransMessageListener;
 import com.fhs.trans.service.impl.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -38,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Configuration
 @ServletComponentScan({"com.fhs.trans.filter"})
-public class TransServiceConfig {
+public class TransServiceConfig implements InitializingBean {
 
     /**
      * 是否启用redis
@@ -46,12 +50,24 @@ public class TransServiceConfig {
     @Value("${easy-trans.is-enable-redis:false}")
     private boolean isEnableRedis;
 
+    /**
+     * 多数据源
+     */
+    @Value("${easy-trans.multiple-data-sources:false}")
+    private boolean multipleDataSources;
+
 
     /**
      * service的包路径
      */
     @Value("${easy-trans.autotrans.package:com.*.*.service.impl}")
     private String packageNames;
+
+    /**
+     * 数据切换api
+     */
+    @Autowired(required = false)
+    private DataSourceSetter dataSourceSetter;
 
 
     /**
@@ -117,6 +133,9 @@ public class TransServiceConfig {
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
+
+
+
 
     /**
      * 远程翻译
@@ -219,4 +238,12 @@ public class TransServiceConfig {
         return new SpringContextUtil();
     }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        TransConfig.MULTIPLE_DATA_SOURCES = this.multipleDataSources;
+        if(TransConfig.MULTIPLE_DATA_SOURCES && dataSourceSetter == null){
+            throw new IllegalArgumentException("easytrans 如果开启多数据源支持，需要自定义 DataSourceSetter 来切换数据源");
+        }
+        TransConfig.dataSourceSetter = this.dataSourceSetter;
+    }
 }

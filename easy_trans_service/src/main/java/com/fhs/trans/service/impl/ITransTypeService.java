@@ -1,14 +1,22 @@
 package com.fhs.trans.service.impl;
 
 
+import com.fhs.common.constant.TransConfig;
 import com.fhs.common.utils.CheckUtils;
+import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 /**
@@ -17,6 +25,9 @@ import java.util.stream.Stream;
  * @author wanglei
  */
 public interface ITransTypeService {
+
+    Logger Logger = LoggerFactory.getLogger(ITransTypeService.class);
+
     /**
      * 翻译一个字段
      *
@@ -72,4 +83,77 @@ public interface ITransTypeService {
         }
     }
 
+    /**
+     * 支持多库
+     *
+     * @param callable
+     * @param dataSourceName
+     * @return
+     */
+    default List<? extends  VO> findByIds(Callable<List<? extends  VO>> callable, String dataSourceName) {
+        if (!TransConfig.MULTIPLE_DATA_SOURCES) {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                Logger.error("", e);
+            }
+            return null;
+        }
+        CompletableFuture<List<? extends  VO>> cf = CompletableFuture.supplyAsync(() -> {
+            try {
+                if(!StringUtil.isEmpty(dataSourceName)){
+                    TransConfig.dataSourceSetter.setDataSource(dataSourceName);
+                }
+                return callable.call();
+            } catch (Exception e) {
+                Logger.error("", e);
+            }
+            return null;
+        });
+        try {
+            return cf.get();
+        } catch (InterruptedException e) {
+            Logger.error("", e);
+        } catch (ExecutionException e) {
+            Logger.error("", e);
+        }
+        return null;
+    }
+
+    /**
+     * 支持多库
+     *
+     * @param callable
+     * @param dataSourceName
+     * @return
+     */
+    default VO findById(Callable<VO> callable, String dataSourceName) {
+        if (!TransConfig.MULTIPLE_DATA_SOURCES) {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                Logger.error("", e);
+            }
+            return null;
+        }
+        CompletableFuture<VO> cf = CompletableFuture.supplyAsync(() -> {
+            try {
+                if(!StringUtil.isEmpty(dataSourceName)){
+                    TransConfig.dataSourceSetter.setDataSource(dataSourceName);
+                }
+                return callable.call();
+            } catch (Exception e) {
+                Logger.error("", e);
+            }
+            return null;
+        });
+        try {
+            return cf.get();
+        } catch (InterruptedException e) {
+            Logger.error("", e);
+        } catch (ExecutionException e) {
+            Logger.error("", e);
+        }
+        return null;
+    }
 }

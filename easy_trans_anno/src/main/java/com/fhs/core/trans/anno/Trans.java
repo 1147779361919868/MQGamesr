@@ -86,4 +86,9 @@ public @interface Trans {
      */
     String customeBeanFuncName() default "";
 
+    /**
+     * 数据源
+     * @return
+     */
+    String dataSource() default "";
 }

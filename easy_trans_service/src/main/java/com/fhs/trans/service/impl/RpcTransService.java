@@ -35,7 +35,10 @@ public class RpcTransService extends SimpleTransService {
         if(!isEnableCloud){
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
-                return transDiver.findByIds(ids, clazz);
+                return findByIds(()->{
+                    return transDiver.findByIds(ids, clazz);
+                },tempTrans.dataSource());
+
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName() );
             }
@@ -58,7 +61,9 @@ public class RpcTransService extends SimpleTransService {
         if(!isEnableCloud){
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
-                return transDiver.findById((Serializable)id, clazz);
+                return findById(()->{
+                    return transDiver.findById((Serializable)id, clazz);
+                },tempTrans.dataSource());
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName() );
             }
