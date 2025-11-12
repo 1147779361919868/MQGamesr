@@ -5,6 +5,7 @@ import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.SimpleTransService;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -37,7 +38,11 @@ public class JPASimpleTransDiver implements SimpleTransService.SimpleTransDiver 
         TypedQuery query = em.createQuery(getSelectSql(targetClass)
                 + " WHERE tbl." + getPkeyFieldName(targetClass) + " = :id", targetClass);
         query.setParameter("id", id);
-        return (VO) query.getSingleResult();
+        try{
+            return (VO) query.getSingleResult();
+        }catch (NoResultException e) {
+            return null;
+        }
     }
 
     private String getSelectSql(Class<? extends VO> targetClass) {
