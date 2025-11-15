@@ -15,7 +15,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Id;
+import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +42,21 @@ public class TransProxyController {
     @PostMapping("/{targetClass}/findByIds")
     public List findByIds(@PathVariable("targetClass") String targetClass, @RequestBody FindByIdsQueryPayload payload) throws ClassNotFoundException {
         Assert.notNull(targetClass, "targetClass 不可为空");
-        return simpleTransDiver.findByIds(payload.getIds(), (Class<? extends VO>) Class.forName(targetClass)).stream().map(vo -> {
+        Class<? extends VO> clazz = (Class<? extends VO>) Class.forName(targetClass);
+        List<? extends Serializable> ids = payload.getIds();
+        List<Field> pkeyFileds = ReflectUtils.getAnnotationField(clazz, Id.class);
+        if (pkeyFileds.isEmpty()) {
+            throw new IllegalArgumentException("没有找到主键字段");
+        }
+        Field pkeyField = pkeyFileds.get(0);
+        Class fieldType = pkeyField.getType();
+        // 如果字段类型不是String，则转换
+        if (fieldType == int.class || fieldType == Integer.class) {
+            ids = payload.getIds().stream().map(Integer::valueOf).collect(Collectors.toList());
+        }else if (fieldType == long.class || fieldType == Long.class) {
+            ids = payload.getIds().stream().map(Long::valueOf).collect(Collectors.toList());
+        }
+        return simpleTransDiver.findByIds(ids, (Class<? extends VO>) Class.forName(targetClass)).stream().map(vo -> {
             try {
                 return vo2BasicVO(vo);
             } catch (IllegalAccessException e) {
@@ -72,10 +89,28 @@ public class TransProxyController {
      * @param targetClass 目标类
      */
     @GetMapping("/{targetClass}/findById/{id}")
-    public Object findByIds(@PathVariable("targetClass") String targetClass, @PathVariable("id") String id) throws ClassNotFoundException, IllegalAccessException {
+    public Object findById(@PathVariable("targetClass") String targetClass, @PathVariable("id") String id) throws ClassNotFoundException, IllegalAccessException {
         Assert.notNull(targetClass, "targetClass 不可为空");
         Assert.notNull(targetClass, "id 不可为空");
-        return vo2BasicVO(simpleTransDiver.findById(id, (Class<? extends VO>) Class.forName(targetClass)));
+        Serializable sid = id;
+        Class<? extends VO> clazz = (Class<? extends VO>) Class.forName(targetClass);
+        List<Field> pkeyFileds = ReflectUtils.getAnnotationField(clazz, Id.class);
+        if (pkeyFileds.isEmpty()) {
+            throw new IllegalArgumentException("没有找到主键字段");
+        }
+        Field pkeyField = pkeyFileds.get(0);
+        Class fieldType = pkeyField.getType();
+        // 如果字段类型不是String，则转换
+        if (fieldType == int.class || fieldType == Integer.class) {
+            sid = Integer.valueOf(id);
+        }else if (fieldType == long.class || fieldType == Long.class) {
+            sid = Long.valueOf(id);
+        }
+        VO vo = simpleTransDiver.findById(sid, (Class<? extends VO>) Class.forName(targetClass));
+        if (vo == null) {
+            return null;
+        }
+        return vo2BasicVO(vo);
     }
 
 }
