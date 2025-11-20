@@ -52,9 +52,13 @@ public class TransProxyController {
         Class fieldType = pkeyField.getType();
         // 如果字段类型不是String，则转换
         if (fieldType == int.class || fieldType == Integer.class) {
-            ids = payload.getIds().stream().map(Integer::valueOf).collect(Collectors.toList());
+            ids = payload.getIds().stream().filter(id->{
+                return id != null && !id.isEmpty();
+            }).map(Integer::valueOf).collect(Collectors.toList());
         }else if (fieldType == long.class || fieldType == Long.class) {
-            ids = payload.getIds().stream().map(Long::valueOf).collect(Collectors.toList());
+            ids = payload.getIds().stream().filter(id->{
+                return id != null && !id.isEmpty();
+            }).map(Long::valueOf).collect(Collectors.toList());
         }
         return simpleTransDiver.findByIds(ids, (Class<? extends VO>) Class.forName(targetClass)).stream().map(vo -> {
             try {
