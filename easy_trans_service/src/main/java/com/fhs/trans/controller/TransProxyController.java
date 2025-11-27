@@ -1,5 +1,6 @@
 package com.fhs.trans.controller;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fhs.common.utils.ConverterUtils;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
@@ -42,21 +43,15 @@ public class TransProxyController {
     @PostMapping("/{targetClass}/findByIds")
     public List findByIds(@PathVariable("targetClass") String targetClass, @RequestBody FindByIdsQueryPayload payload) throws ClassNotFoundException {
         Assert.notNull(targetClass, "targetClass 不可为空");
-        Class<? extends VO> clazz = (Class<? extends VO>) Class.forName(targetClass);
         List<? extends Serializable> ids = payload.getIds();
-        List<Field> pkeyFileds = ReflectUtils.getAnnotationField(clazz, Id.class);
-        if (pkeyFileds.isEmpty()) {
-            throw new IllegalArgumentException("没有找到主键字段");
-        }
-        Field pkeyField = pkeyFileds.get(0);
-        Class fieldType = pkeyField.getType();
+        Class fieldType = getPkeyFieldType(targetClass);
         // 如果字段类型不是String，则转换
         if (fieldType == int.class || fieldType == Integer.class) {
-            ids = payload.getIds().stream().filter(id->{
+            ids = payload.getIds().stream().filter(id -> {
                 return id != null && !id.isEmpty();
             }).map(Integer::valueOf).collect(Collectors.toList());
-        }else if (fieldType == long.class || fieldType == Long.class) {
-            ids = payload.getIds().stream().filter(id->{
+        } else if (fieldType == long.class || fieldType == Long.class) {
+            ids = payload.getIds().stream().filter(id -> {
                 return id != null && !id.isEmpty();
             }).map(Long::valueOf).collect(Collectors.toList());
         }
@@ -67,6 +62,24 @@ public class TransProxyController {
                 return null;
             }
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取主键字段类型
+     * @param targetClass po类名
+     * @return 主键字段类型
+     * @throws ClassNotFoundException 如果类不存在
+     */
+    private Class getPkeyFieldType(String targetClass) throws ClassNotFoundException {
+        Class<? extends VO> clazz = (Class<? extends VO>) Class.forName(targetClass);
+        List<Field> fieldList = ReflectUtils.getAnnotationField(clazz, javax.persistence.Id.class);
+        if (fieldList.size() == 0) {
+            fieldList = ReflectUtils.getAnnotationField(clazz, TableId.class);
+            if (fieldList.size() == 0) {
+                throw new RuntimeException("找不到" + clazz + "的id注解");
+            }
+        }
+        return fieldList.get(0).getType();
     }
 
     /**
@@ -97,17 +110,11 @@ public class TransProxyController {
         Assert.notNull(targetClass, "targetClass 不可为空");
         Assert.notNull(targetClass, "id 不可为空");
         Serializable sid = id;
-        Class<? extends VO> clazz = (Class<? extends VO>) Class.forName(targetClass);
-        List<Field> pkeyFileds = ReflectUtils.getAnnotationField(clazz, Id.class);
-        if (pkeyFileds.isEmpty()) {
-            throw new IllegalArgumentException("没有找到主键字段");
-        }
-        Field pkeyField = pkeyFileds.get(0);
-        Class fieldType = pkeyField.getType();
+        Class fieldType = getPkeyFieldType(targetClass);
         // 如果字段类型不是String，则转换
         if (fieldType == int.class || fieldType == Integer.class) {
             sid = Integer.valueOf(id);
-        }else if (fieldType == long.class || fieldType == Long.class) {
+        } else if (fieldType == long.class || fieldType == Long.class) {
             sid = Long.valueOf(id);
         }
         VO vo = simpleTransDiver.findById(sid, (Class<? extends VO>) Class.forName(targetClass));
