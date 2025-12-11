@@ -113,7 +113,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             tempField.setAccessible(true);
             Trans tempTrans = tempField.getAnnotation(Trans.class);
             String targetClassName = getTargetClassName(tempTrans);
-            List<Field> fields = namespaceFieldsGroupMap.containsKey(targetClassName) ? namespaceFieldsGroupMap.get(tempTrans.target()) : new ArrayList<>();
+            List<Field> fields = namespaceFieldsGroupMap.containsKey(targetClassName) ? namespaceFieldsGroupMap.get(targetClassName) : new ArrayList<>();
             fields.add(tempField);
             namespaceFieldsGroupMap.put(targetClassName,fields);
         }
