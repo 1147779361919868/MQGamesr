@@ -15,12 +15,12 @@ easy trans适用于四种场景
 4   我有一个枚举，枚举里有一个title字段，我想给前端展示title的值 给客户
 # 食用步骤
 ## 技术经理/架构 需要做的事情
-1 、先把maven 引用加上
+1 、先把maven 引用加上（如果1.2.0版本无法引用请使用1.1.9版本，中央仓库更新有延迟）
 ``` xml
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.1.9</version>
+            <version>1.2.0</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -28,7 +28,7 @@ easy trans适用于四种场景
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.1.9</version>
+            <version>1.2.0</version>
         </dependency>
 ```
   JPA 用户另外还需要加以下扩展：
@@ -36,7 +36,7 @@ easy trans适用于四种场景
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_jpa_extend</artifactId>
-            <version>1.1.9</version>
+            <version>1.2.0</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)

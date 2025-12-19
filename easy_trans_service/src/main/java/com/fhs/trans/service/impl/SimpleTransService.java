@@ -2,6 +2,7 @@ package com.fhs.trans.service.impl;
 
 import com.fhs.common.utils.CheckUtils;
 import com.fhs.common.utils.ConverterUtils;
+import com.fhs.common.utils.StringUtil;
 import com.fhs.core.trans.anno.AutoTrans;
 import com.fhs.core.trans.anno.Trans;
 import com.fhs.core.trans.constant.TransType;
@@ -29,7 +30,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     /**
      * 如果直接去表里查询，放到这个cache中
      */
-    private ThreadLocal<Map<String, Map<String, String>>> threadLocalCache = new ThreadLocal<>();
+    private ThreadLocal<Map<String, Map<String, Object>>> threadLocalCache = new ThreadLocal<>();
 
     protected SimpleTransDiver transDiver;
 
@@ -60,10 +61,11 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             Map<String, String> transCache = null;
             // 主键可能是数组
             pkey = pkey.replace("[", "").replace("]", "");
+            Map<String, Object> tempTransCache = null;
             if (pkey.contains(",")) {
                 String[] pkeys = pkey.split(",");
                 transCache = new LinkedHashMap<>();
-                Map<String, String> tempTransCache = null;
+
                 for (String tempPkey : pkeys) {
                     tempTransCache = getTempTransCacheMap(tempTrans, tempPkey);
                     if (tempTransCache == null) {
@@ -72,17 +74,25 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
                     }
                     // 比如学生表  可能有name和age 2个字段
                     for (String key : tempTransCache.keySet()) {
-                        transCache.put(key, transCache.containsKey(key) ? transCache.get(key) + "," + tempTransCache.get(key) : tempTransCache.get(key));
+                        transCache.put(key, transCache.containsKey(key) ? transCache.get(key) + "," + tempTransCache.get(key)
+                                : StringUtil.toString(tempTransCache.get(key)));
                     }
                 }
             } else {
-                transCache = getTempTransCacheMap(tempTrans, ReflectUtils.getValue(obj, tempField.getName()));
+                transCache = new HashMap<>(1);
+                tempTransCache = getTempTransCacheMap(tempTrans, ReflectUtils.getValue(obj, tempField.getName()));
+                Map<String, String> finalTransCache = transCache;
+                tempTransCache.forEach((k, v) -> {
+                    if(!"targetObject".equals(k)){
+                        finalTransCache.put(k, StringUtil.toString(v));
+                    }
+                });
                 if (transCache == null) {
                     LOGGER.error(this.getClass().getName() + "缓存未命中:" + tempTrans.target().getName() + "_" + pkey);
                     continue;
                 }
             }
-            setRef(tempTrans, obj, transCache);
+            setRef(tempTrans, obj, transCache,(VO) tempTransCache.get("targetObject"));
             Map<String, String> transMap = obj.getTransMap();
             if (transMap == null) {
                 continue;
@@ -191,7 +201,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param pkey      主键
      * @return 缓存
      */
-    private Map<String, String> getTempTransCacheMap(Trans tempTrans, Object pkey) {
+    private Map<String, Object> getTempTransCacheMap(Trans tempTrans, Object pkey) {
         if (this.threadLocalCache.get() == null) {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
@@ -220,9 +230,9 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param trans 配置
      * @return
      */
-    protected Map<String, String> createTempTransCacheMap(Object po, Trans trans) {
+    protected Map<String, Object> createTempTransCacheMap(Object po, Trans trans) {
         String fielVal = null;
-        Map<String, String> tempCacheTransMap = new LinkedHashMap<>();
+        Map<String, Object> tempCacheTransMap = new LinkedHashMap<>();
         if (po == null) {
             return tempCacheTransMap;
         }
@@ -230,6 +240,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             fielVal = ConverterUtils.toString(ReflectUtils.getValue(po, field));
             tempCacheTransMap.put(field, fielVal);
         }
+        tempCacheTransMap.put("targetObject",po);
         return tempCacheTransMap;
     }
 

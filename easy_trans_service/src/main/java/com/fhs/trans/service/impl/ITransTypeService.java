@@ -71,6 +71,28 @@ public interface ITransTypeService {
         }
     }
 
+    default void setRef(Trans trans, VO vo, Map<String, String> valMap, VO target) {
+        if (CheckUtils.isNotEmpty(trans.ref())) {
+            boolean isSetRef =false;
+            if(target!=null){
+                Field field= ReflectUtils.getDeclaredField(vo.getClass(),trans.ref());
+                if(field.getType() == target.getClass()){
+                    isSetRef = true;
+                    ReflectUtils.setValue(vo, trans.ref(), target);
+                }
+            }
+            //没有set才去set
+            if (!isSetRef){
+                setRef(trans.ref(), vo, valMap);
+            }
+        }
+        if (CheckUtils.isNotEmpty(trans.refs())) {
+            Stream.of(trans.refs()).forEach(ref -> {
+                setRef(ref, vo, valMap);
+            });
+        }
+    }
+
     default void setRef(String ref, VO vo, Map<String, String> valMap) {
         String[] refSetting = ref.split("#");
         if (refSetting.length == 1) {

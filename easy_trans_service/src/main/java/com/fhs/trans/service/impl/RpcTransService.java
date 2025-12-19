@@ -85,12 +85,12 @@ public class RpcTransService extends SimpleTransService {
      * @param trans 配置
      * @return
      */
-    protected Map<String, String> createTempTransCacheMap(Object po, Trans trans) {
+    protected Map<String, Object> createTempTransCacheMap(Object po, Trans trans) {
         if(!isEnableCloud){
             return super.createTempTransCacheMap(po,trans);
         }
         String fielVal = null;
-        Map<String, String> tempCacheTransMap = new LinkedHashMap<>();
+        Map<String, Object> tempCacheTransMap = new LinkedHashMap<>();
         if (po == null) {
             return tempCacheTransMap;
         }
