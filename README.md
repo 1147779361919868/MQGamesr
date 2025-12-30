@@ -149,3 +149,5 @@ https://gitee.com/fhs-opensource/easy_trans/wikis/%E5%BF%AB%E9%80%9F%E5%BC%80%E5
 4、陕西逐道科技有限公司   
 5、深圳市易联联盟科技有限公司
 
+# 求star
+如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
