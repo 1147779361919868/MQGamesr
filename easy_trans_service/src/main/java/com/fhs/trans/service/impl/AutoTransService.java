@@ -103,8 +103,8 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
                 Map<String, String> tempTransCache = null;
                 for (String tempPkey : pkeys) {
                     tempTransCache = getTempTransCacheMap(namespace, tempPkey);
-                    if (tempTransCache == null) {
-                        LOGGER.error("auto trans缓存未命中:" + namespace + "_" + tempPkey);
+                    if (tempTransCache == null || tempTransCache.isEmpty()) {
+                        LOGGER.warn("auto trans缓存未命中:" + namespace + "_" + tempPkey);
                         continue;
                     }
                     // 比如学生表  可能有name和age 2个字段
@@ -115,8 +115,8 @@ public class AutoTransService implements ITransTypeService, InitializingBean, Ap
             } else {
                 //如果不是多个保证原汁原味 的原来的什么类型就是什么类型 而不是string
                 transCache = getTempTransCacheMap(namespace, ReflectUtils.getValue(obj, tempField.getName()));
-                if (transCache == null) {
-                    LOGGER.error("auto trans缓存未命中:" + namespace + "_" + pkey);
+                if (transCache == null  || transCache.isEmpty()) {
+                    LOGGER.warn("auto trans缓存未命中:" + namespace + "_" + pkey);
                     continue;
                 }
             }

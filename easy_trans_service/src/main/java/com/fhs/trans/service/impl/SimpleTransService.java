@@ -68,8 +68,8 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
 
                 for (String tempPkey : pkeys) {
                     tempTransCache = getTempTransCacheMap(tempTrans, tempPkey);
-                    if (tempTransCache == null) {
-                        LOGGER.error(this.getClass().getName() + "缓存未命中:" + tempTrans.target().getName() + "_" + tempPkey);
+                    if (tempTransCache == null || tempTransCache.isEmpty()) {
+                        LOGGER.warn(this.getClass().getName() + "翻译未命中数据:" + tempTrans.target().getName() + "_" + tempPkey);
                         continue;
                     }
                     // 比如学生表  可能有name和age 2个字段
@@ -81,16 +81,16 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             } else {
                 transCache = new HashMap<>(1);
                 tempTransCache = getTempTransCacheMap(tempTrans, ReflectUtils.getValue(obj, tempField.getName()));
+                if (tempTransCache == null || tempTransCache.isEmpty()) {
+                    LOGGER.warn(this.getClass().getName() + "翻译未命中数据:" + tempTrans.target().getName() + "_" + ReflectUtils.getValue(obj, tempField.getName()));
+                    continue;
+                }
                 Map<String, String> finalTransCache = transCache;
                 tempTransCache.forEach((k, v) -> {
                     if(!"targetObject".equals(k)){
                         finalTransCache.put(k, StringUtil.toString(v));
                     }
                 });
-                if (transCache == null) {
-                    LOGGER.error(this.getClass().getName() + "缓存未命中:" + tempTrans.target().getName() + "_" + pkey);
-                    continue;
-                }
             }
             setRef(tempTrans, obj, transCache,(VO) tempTransCache.get("targetObject"));
             Map<String, String> transMap = obj.getTransMap();
