@@ -6,7 +6,7 @@
 
 先看效果：    
 
-![输入图片说明](https://images.gitee.com/uploads/images/2021/0923/192412_492187e6_339743.png "微信截图_20210923192348.png")
+![输入图片说明](Snipaste_2022-02-22_15-19-30.jpg)
 
 easy trans适用于四种场景   
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想做表关联查询   
