@@ -22,10 +22,10 @@ easy trans原理
 easy trans 支持的五种类型    
 
 1   字典翻译(TransType.DICTIONARY)，需要使用者把字典信息刷新到DictionaryTransService 中进行缓存，使用字典翻译的时候取缓存数据源    
-2   简单翻译(TransType.SIMPLE)，比如有userId需要userName或者userPo给前端，原理是组件使用MybatisPlus/JPA的API自动进行查询，把结果放到TransMap中。
-3   跨微服务翻译(TransType.RPC)，比如订单和用户是2个微服务，但是我要在订单详情里展示订单的创建人的用户名，需要用到RPC翻译，原理是订单微服务使用restTemplate调用用户服务的一个统一的接口，把需要翻译的id传过去，然后用户微服务使用MybatisPlus/JPA的API自动进行查询把结果给订单微服务，然后订单微服务拿到数据后进行翻译，当然使用者只是需要一个注解，这些事情都是由组件自动完成的。
-4   AutoTrans(TransType.AUTO)，还是id翻译name场景，但是使用者如果想组件调用自己写的方法而不通过Mybatis Plus/JPA 的API进行数据查询，就可以使用AutoTrans
-5   枚举翻译(TransType.ENUM) 比如我要把SEX.BOY 翻译为男，可以用枚举翻译。
+2   简单翻译(TransType.SIMPLE)，比如有userId需要userName或者userPo给前端，原理是组件使用MybatisPlus/JPA的API自动进行查询，把结果放到TransMap中。    
+3   跨微服务翻译(TransType.RPC)，比如订单和用户是2个微服务，但是我要在订单详情里展示订单的创建人的用户名，需要用到RPC翻译，原理是订单微服务使用restTemplate调用用户服务的一个统一的接口，把需要翻译的id传过去，然后用户微服务使用MybatisPlus/JPA的API自动进行查询把结果给订单微服务，然后订单微服务拿到数据后进行翻译，当然使用者只是需要一个注解，这些事情都是由组件自动完成的。    
+4   AutoTrans(TransType.AUTO)，还是id翻译name场景，但是使用者如果想组件调用自己写的方法而不通过Mybatis Plus/JPA 的API进行数据查询，就可以使用AutoTrans    
+5   枚举翻译(TransType.ENUM) 比如我要把SEX.BOY 翻译为男，可以用枚举翻译。     
 
 
 
