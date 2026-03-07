@@ -32,7 +32,7 @@ public class TransMethodResultAop {
             throw e;
         }
         try {
-           return TransUtil.transOne(proceed,transService,false);
+           return TransUtil.transOne(proceed,transService,false,new ArrayList<>());
         } catch (Exception e) {
             log.error("翻译错误",e);
         }

@@ -27,7 +27,7 @@ public class TransUtil {
      * @param isProxy
      * @return
      */
-    public static Collection transBatch(Object object, TransService transService, boolean isProxy) throws IllegalAccessException, InstantiationException {
+    public static Collection transBatch(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException, InstantiationException {
         Collection param = (Collection) object;
         if (param == null) {
             return null;
@@ -41,7 +41,7 @@ public class TransUtil {
             isVo = true;
         } else {
             for (Object tempObject : param) {
-                transOne(tempObject, transService, isProxy);
+                transOne(tempObject, transService, isProxy, hasTransObjs);
             }
         }
         if (!isProxy || (!isVo)) {
@@ -56,37 +56,69 @@ public class TransUtil {
             return param;
         }
         for (Object vo : param) {
+            if (contains(hasTransObjs, vo)) {
+                continue;
+            }
+            hasTransObjs.add(vo);
             result.add(createProxyVoForJackson((VO) vo));
         }
         return result;
     }
 
+    /**
+     * 判断是否包含某个对象
+     * @param list 对象集合
+     * @param obj 对象
+     * @return true 包含 false 不包含
+     */
+    private static boolean contains(List<Object> list, Object obj) {
+        for (Object o : list) {
+            if (o == obj) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    public static Object transOne(Object object, TransService transService, boolean isProxy) throws IllegalAccessException, InstantiationException {
+    /**
+     * 翻译单个对象
+     *
+     * @param object       被翻译的对象
+     * @param transService 翻译服务
+     * @param isProxy      是否启用代理
+     * @return
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    public static Object transOne(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException, InstantiationException {
         if (object == null) {
             return null;
         }
+        if (contains(hasTransObjs, object)) {
+            return object;
+        }
+        hasTransObjs.add(object);
         boolean isVo = false;
         if (object instanceof VO) {
             transService.transOne((VO) object);
             isVo = true;
         } else if (object instanceof Collection) {
-            return transBatch(object, transService, isProxy);
+            return transBatch(object, transService, isProxy, hasTransObjs);
         } else if (object.getClass().getName().startsWith("java.")) {
             return object;
         } else {
             List<Field> fields = ReflectUtils.getAllField(object);
             Object tempObj = null;
             for (Field field : fields) {
-                if(java.lang.reflect.Modifier.isFinal(field.getModifiers()) || java.lang.reflect.Modifier.isStatic(field.getModifiers())){
+                if (java.lang.reflect.Modifier.isFinal(field.getModifiers()) || java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
                 field.setAccessible(true);
                 tempObj = field.get(object);
-                try{
-                    field.set(object, transOne(tempObj, transService, isProxy));
-                }catch (Exception e){
-                    log.error("如果字段set错误，请反馈给easytrans开发者",e);
+                try {
+                    field.set(object, transOne(tempObj, transService, isProxy, hasTransObjs));
+                } catch (Exception e) {
+                    log.error("如果字段set错误，请反馈给easytrans开发者", e);
                 }
 
             }

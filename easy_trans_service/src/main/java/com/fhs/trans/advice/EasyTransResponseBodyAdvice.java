@@ -12,6 +12,9 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 @Slf4j
 @ControllerAdvice
 public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
@@ -34,7 +37,7 @@ public class EasyTransResponseBodyAdvice implements ResponseBodyAdvice {
     public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
         Object result = null;
         try {
-            result = TransUtil.transOne(o,transService,isEnableTile);
+            result = TransUtil.transOne(o,transService,isEnableTile,new ArrayList<>());
         }catch (Exception e){
             log.error("翻译错误",e);
         }
