@@ -7,10 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fhs.core.trans.util.ReflectUtils;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.Cache;
@@ -90,12 +87,12 @@ public interface VO {
         if (fieldList.size() == 0) {
             fieldList = ReflectUtils.getAnnotationField(this.getClass(), TableId.class);
             if (fieldList.size() == 0) {
-                if (isThrowError) {
+                Field idField = ReflectUtils.getDeclaredField(this.getClass(), "id");
+                fieldList = Arrays.asList(idField);
+                if (idField ==null && isThrowError) {
                     throw new RuntimeException("找不到" + this.getClass() + "的id注解");
                 }
             }
-            fieldList.get(0).setAccessible(true);
-            return fieldList.get(0);
         }
         fieldList.get(0).setAccessible(true);
         ID_FIELD_CACHE_MAP.put(this.getClass(), fieldList.get(0));
