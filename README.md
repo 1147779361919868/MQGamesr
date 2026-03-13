@@ -36,7 +36,7 @@ easy trans 支持的五种类型
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.2</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -44,7 +44,7 @@ easy trans 支持的五种类型
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.2</version>
         </dependency>
 ```
   JPA 用户另外还需要加以下扩展：
@@ -52,7 +52,7 @@ easy trans 支持的五种类型
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_jpa_extend</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.2</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
