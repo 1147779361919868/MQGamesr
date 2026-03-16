@@ -9,6 +9,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -19,6 +20,12 @@ import java.util.*;
 @Slf4j
 @Aspect
 public class TransMethodResultAop {
+
+    /**
+     * 开启平铺模式
+     */
+    @Value("${easy-trans.is-enable-tile:false}")
+    private Boolean isEnableTile;
 
     @Autowired
     private TransService transService;
@@ -32,7 +39,7 @@ public class TransMethodResultAop {
             throw e;
         }
         try {
-           return TransUtil.transOne(proceed,transService,false,new ArrayList<>());
+           return TransUtil.transOne(proceed,transService,isEnableTile,new ArrayList<>());
         } catch (Exception e) {
             log.error("翻译错误",e);
         }
