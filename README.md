@@ -36,7 +36,7 @@ easy trans 支持的五种类型
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -44,7 +44,7 @@ easy trans 支持的五种类型
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3</version>
         </dependency>
 ```
   JPA 用户另外还需要加以下扩展：
@@ -52,7 +52,7 @@ easy trans 支持的五种类型
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_jpa_extend</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
@@ -164,6 +164,6 @@ https://gitee.com/fhs-opensource/easy_trans/wikis/%E5%BF%AB%E9%80%9F%E5%BC%80%E5
 3、深圳市易流科技股份有限公司   
 4、陕西逐道科技有限公司   
 5、深圳市易联联盟科技有限公司
-
+6、中体数科（北京）体育发展有限公司    
 # 求star
 如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
