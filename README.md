@@ -167,5 +167,6 @@ https://gitee.com/fhs-opensource/easy_trans/wikis/%E5%BF%AB%E9%80%9F%E5%BC%80%E5
 6、中体数科（北京）体育发展有限公司    
 7、首都信息发展股份有限公司
 8、航天神舟智慧系统技术有限公司
+9、小诺V2 https://gitee.com/xiaonuobase/snowy
 # 求star
 如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
