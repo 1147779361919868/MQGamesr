@@ -91,4 +91,11 @@ public @interface Trans {
      * @return
      */
     String dataSource() default "";
+
+    /**
+     *  唯一键字段
+     * 部分的时候表里的code，身份证号码，手机号等也是唯一键
+     * @return
+     */
+    String uniqueField() default "";
 }

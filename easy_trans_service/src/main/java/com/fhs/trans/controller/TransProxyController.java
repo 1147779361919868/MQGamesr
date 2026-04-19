@@ -55,7 +55,7 @@ public class TransProxyController {
                 return id != null && !id.isEmpty();
             }).map(Long::valueOf).collect(Collectors.toList());
         }
-        return simpleTransDiver.findByIds(ids, (Class<? extends VO>) Class.forName(targetClass)).stream().map(vo -> {
+        return simpleTransDiver.findByIds(ids, (Class<? extends VO>) Class.forName(targetClass),payload.getUniqueField()).stream().map(vo -> {
             try {
                 return vo2BasicVO(vo);
             } catch (IllegalAccessException e) {
@@ -106,7 +106,7 @@ public class TransProxyController {
      * @param targetClass 目标类
      */
     @GetMapping("/{targetClass}/findById/{id}")
-    public Object findById(@PathVariable("targetClass") String targetClass, @PathVariable("id") String id) throws ClassNotFoundException, IllegalAccessException {
+    public Object findById(@PathVariable("targetClass") String targetClass, @PathVariable("id") String id, @RequestParam("uniqueField")String uniqueField) throws ClassNotFoundException, IllegalAccessException {
         Assert.notNull(targetClass, "targetClass 不可为空");
         Assert.notNull(targetClass, "id 不可为空");
         Serializable sid = id;
@@ -117,7 +117,7 @@ public class TransProxyController {
         } else if (fieldType == long.class || fieldType == Long.class) {
             sid = Long.valueOf(id);
         }
-        VO vo = simpleTransDiver.findById(sid, (Class<? extends VO>) Class.forName(targetClass));
+        VO vo = simpleTransDiver.findById(sid, (Class<? extends VO>) Class.forName(targetClass),uniqueField);
         if (vo == null) {
             return null;
         }

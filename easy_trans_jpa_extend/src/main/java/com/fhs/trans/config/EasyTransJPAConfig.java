@@ -33,7 +33,6 @@ public class EasyTransJPAConfig {
     }
 
     @Bean
-    @Primary
     public JPASimpleTransDiver jpaSimpleTransDiver(EntityManager em) {
         JPASimpleTransDiver result = new JPASimpleTransDiver(em);
         return result;

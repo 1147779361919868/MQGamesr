@@ -36,7 +36,7 @@ public class RpcTransService extends SimpleTransService {
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
                 return findByIds(()->{
-                    return transDiver.findByIds(ids, clazz);
+                    return transDiver.findByIds(ids, clazz,tempTrans.uniqueField());
                 },tempTrans.dataSource());
 
             } catch (ClassNotFoundException e) {
@@ -45,6 +45,7 @@ public class RpcTransService extends SimpleTransService {
         }
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("ids", ids);
+        paramMap.put("uniqueField", tempTrans.uniqueField());
         //执行远程调用
         try {
             String respJson = restTemplate.postForObject("http://" + tempTrans.serviceName()
@@ -62,7 +63,7 @@ public class RpcTransService extends SimpleTransService {
             try {
                 Class clazz = Class.forName(tempTrans.targetClassName());
                 return findById(()->{
-                    return transDiver.findById((Serializable)id, clazz);
+                    return transDiver.findById((Serializable)id, clazz,tempTrans.uniqueField());
                 },tempTrans.dataSource());
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("类找不到：" + tempTrans.targetClassName() );
@@ -71,7 +72,7 @@ public class RpcTransService extends SimpleTransService {
         //执行远程调用
         try {
             return restTemplate.getForObject("http://" + tempTrans.serviceName()
-                    + "/easyTrans/proxy/" + tempTrans.targetClassName() + "/findById/" + id, BasicVO.class);
+                    + "/easyTrans/proxy/" + tempTrans.targetClassName() + "/findById/" + id + "?uniqueField=" + tempTrans.uniqueField(), BasicVO.class);
         } catch (Exception e) {
             log.error("trans service执行RPC Trans 远程调用错误:" + tempTrans.serviceName(), e);
         }

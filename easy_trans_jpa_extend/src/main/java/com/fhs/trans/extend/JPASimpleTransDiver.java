@@ -3,6 +3,7 @@ package com.fhs.trans.extend;
 import com.fhs.core.trans.util.ReflectUtils;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.SimpleTransService;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -23,7 +24,10 @@ public class JPASimpleTransDiver implements SimpleTransService.SimpleTransDiver 
     }
 
     @Override
-    public List<? extends VO> findByIds(List<? extends Serializable> ids, Class<? extends VO> targetClass) {
+    public List<? extends VO> findByIds(List<? extends Serializable> ids, Class<? extends VO> targetClass,String uniqueField) {
+        if(!StringUtils.isEmpty(uniqueField)){
+            throw new RuntimeException("JPA不支持唯一索引来代替ID查询");
+        }
         if (ids == null || ids.isEmpty()) {
             return new ArrayList();
         }
@@ -34,7 +38,10 @@ public class JPASimpleTransDiver implements SimpleTransService.SimpleTransDiver 
     }
 
     @Override
-    public VO findById(Serializable id, Class<? extends VO> targetClass) {
+    public VO findById(Serializable id, Class<? extends VO> targetClass,String uniqueField) {
+        if(!StringUtils.isEmpty(uniqueField)){
+            throw new RuntimeException("JPA不支持唯一索引来代替ID查询");
+        }
         TypedQuery query = em.createQuery(getSelectSql(targetClass)
                 + " WHERE tbl." + getPkeyFieldName(targetClass) + " = :id", targetClass);
         query.setParameter("id", id);
