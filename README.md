@@ -6,7 +6,7 @@
 
 先看效果：    
 
-![输入图片说明](Snipaste_2022-02-22_15-19-30.jpg)
+![输入图片说明](images/jieshao.jpg)
 
 easy trans适用于四种场景   
 
