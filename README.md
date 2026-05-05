@@ -50,22 +50,12 @@
 2、在yaml中添加如下配置
 ``` YAML
 easy-trans:
-   autotrans: # 如果没使用到autotrans可以不配置
-       #您的service/dao所在的包 支持通配符比如com.*.**.service.**，他的默认值是com.*.*.service.impl
-       package: com.fhs.test.service.**;com.fhs.test.dao.** 
    #启用redis缓存 如果不用redis请设置为false
-   is-enable-redis: true 
+   is-enable-redis: false
    #启用全局翻译(拦截所有responseBody进行自动翻译)，如果对于性能要求很高可关闭此配置
    is-enable-global: true 
    #启用平铺模式
    is-enable-tile: true
-spring:#如果用到redis配置redis连接
-  redis:
-    host: 192.168.0.213
-    port: 6379
-    password: 123456
-    database: 0
-    timeout: 6000
 ```
 3、如果不使用redis，请在启动类加禁用掉redis的自动配置类
 ``` java
