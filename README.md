@@ -2,31 +2,15 @@
 
 # 介绍
 
-在项目开发中，借助JPA和Mybatis Plus我们已经可以做到单表查询不写SQL，但是很多时候我们需要关联字典表，关联其他表来实现字典码和外键的翻译，又要去写sql，使用 EasyTrans 你只需要在被翻译的pojo属性上加一个注解即可完成字典码/外键 翻译,查询其他表翻译的工作组件会自动完成。
 
-先看效果：    
+![输入图片说明](images/jieshao.jpg)
 
-![输入图片说明](Snipaste_2022-02-22_15-19-30.jpg)
-
-easy trans适用于四种场景   
+## easy trans适用于四种场景   
 
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想自己手动做表关联查询   
 2   我有一个字典码 sex  和 一个字典值0  我希望能翻译成   男  给客户展示。   
 3   我有一组user id 比如 1，2,3  我希望能展示成 张三,李四,王五 给客户   
 4   我有一个枚举，枚举里有一个title字段，我想给前端展示title的值 给客户
-
-easy trans原理    
-  
-当需要翻译的vo实现了TransPojo 接口后，组件自带一个getTransMap 方法可以获取到一个map，组件根据id/字典码/枚举 找到翻译数据源后进行翻译，把结果放到这个map中，在给前端json序列化前，把map的内容和vo的其他的字段平铺到一起，实现我只有userid没有userName这个字段，但是json中会自动包含userName这个字段的效果。    
-
-easy trans 支持的五种类型    
-
-1   字典翻译(TransType.DICTIONARY)，需要使用者把字典信息刷新到DictionaryTransService 中进行缓存，使用字典翻译的时候取缓存数据源    
-2   简单翻译(TransType.SIMPLE)，比如有userId需要userName或者userPo给前端，原理是组件使用MybatisPlus/JPA的API自动进行查询，把结果放到TransMap中。    
-3   跨微服务翻译(TransType.RPC)，比如订单和用户是2个微服务，但是我要在订单详情里展示订单的创建人的用户名，需要用到RPC翻译，原理是订单微服务使用restTemplate调用用户服务的一个统一的接口，把需要翻译的id传过去，然后用户微服务使用MybatisPlus/JPA的API自动进行查询把结果给订单微服务，然后订单微服务拿到数据后进行翻译，当然使用者只是需要一个注解，这些事情都是由组件自动完成的。    
-4   AutoTrans(TransType.AUTO)，还是id翻译name场景，但是使用者如果想组件调用自己写的方法而不通过Mybatis Plus/JPA 的API进行数据查询，就可以使用AutoTrans    
-5   枚举翻译(TransType.ENUM) 比如我要把SEX.BOY 翻译为男，可以用枚举翻译。     
-
 
 
 # 食用步骤
@@ -66,22 +50,12 @@ easy trans 支持的五种类型
 2、在yaml中添加如下配置
 ``` YAML
 easy-trans:
-   autotrans: # 如果没使用到autotrans可以不配置
-       #您的service/dao所在的包 支持通配符比如com.*.**.service.**，他的默认值是com.*.*.service.impl
-       package: com.fhs.test.service.**;com.fhs.test.dao.** 
    #启用redis缓存 如果不用redis请设置为false
-   is-enable-redis: true 
+   is-enable-redis: false
    #启用全局翻译(拦截所有responseBody进行自动翻译)，如果对于性能要求很高可关闭此配置
    is-enable-global: true 
    #启用平铺模式
    is-enable-tile: true
-spring:#如果用到redis配置redis连接
-  redis:
-    host: 192.168.0.213
-    port: 6379
-    password: 123456
-    database: 0
-    timeout: 6000
 ```
 3、如果不使用redis，请在启动类加禁用掉redis的自动配置类
 ``` java
@@ -145,6 +119,20 @@ public class Student implements TransPojo {
 然后访问你的controller，看返回结果。
 
 
+## easy trans 支持的五种类型    
+
+### 字典翻译(TransType.DICTIONARY)
+
+ 需要使用者把字典信息刷新到DictionaryTransService 中进行缓存，使用字典翻译的时候取缓存数据源 
+	 
+###    简单翻译(TransType.SIMPLE)
+比如有userId需要userName或者userPo给前端，原理是组件使用MybatisPlus/JPA的API自动进行查询，把结果放到TransMap中。    
+###    跨微服务翻译(TransType.RPC)
+比如订单和用户是2个微服务，但是我要在订单详情里展示订单的创建人的用户名，需要用到RPC翻译，原理是订单微服务使用restTemplate调用用户服务的一个统一的接口，把需要翻译的id传过去，然后用户微服务使用MybatisPlus/JPA的API自动进行查询把结果给订单微服务，然后订单微服务拿到数据后进行翻译，当然使用者只是需要一个注解，这些事情都是由组件自动完成的。    
+###    AutoTrans(TransType.AUTO)
+还是id翻译name场景，但是使用者如果想组件调用自己写的方法而不通过Mybatis Plus/JPA 的API进行数据查询，就可以使用AutoTrans    
+###    枚举翻译(TransType.ENUM) 
+比如我要把SEX.BOY 翻译为男，可以用枚举翻译。    
 
 # 参与贡献和技术支持
 
