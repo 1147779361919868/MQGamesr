@@ -5,22 +5,22 @@
 
 ![输入图片说明](images/jieshao.jpg)
 
-## easy trans适用于四种场景   
+## easy trans适用于5种场景   
 
 1   我有一个id，但是我需要给客户展示他的title/name  但是我又不想自己手动做表关联查询   
 2   我有一个字典码 sex  和 一个字典值0  我希望能翻译成   男  给客户展示。   
 3   我有一组user id 比如 1，2,3  我希望能展示成 张三,李四,王五 给客户   
 4   我有一个枚举，枚举里有一个title字段，我想给前端展示title的值 给客户
-
+5   我有一个唯一键(比如手机号，身份证号码，但是非其他表id字段)，但是我需要给客户展示他的title/name  但是我又不想自己手动做表关联查询   
 
 # 食用步骤
 ## 技术经理/架构 需要做的事情
-1 、先把maven 引用加上（如果1.2.0版本无法引用请使用1.1.9版本，中央仓库更新有延迟）
+1 、先把maven 引用加上（如果1.2.4版本无法引用请使用1.2.3版本，中央仓库更新有延迟）
 ``` xml
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.4</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_mybatis_plus_extend</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.4</version>
         </dependency>
 ```
   JPA 用户另外还需要加以下扩展：
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy_trans_jpa_extend</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.4</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
