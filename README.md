@@ -3,7 +3,7 @@
 # 介绍
 
 
-![输入图片说明](images/jieshao.jpg)
+![输入图片说明](images/jieshao_temp.jpg)
 
 ## easy trans适用于5种场景   
 
