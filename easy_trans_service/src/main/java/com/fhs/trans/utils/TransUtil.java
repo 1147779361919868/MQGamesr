@@ -18,13 +18,19 @@ import static com.fhs.core.trans.util.ReflectUtils.getAllField;
 @Slf4j
 public class TransUtil {
 
+    /**
+     * 是否翻译map
+     * 有一些框架的vo封装类 是一个map，为了适配加个开关，打开性能有影响
+     */
+    public static boolean transResultMap = false;
+
 
     /**
      * 翻译集合
      *
      * @param object       被翻译的对象
-     * @param transService
-     * @param isProxy
+     * @param transService 翻译服务
+     * @param isProxy      是否创建代理
      * @return
      */
     public static Collection transBatch(Object object, TransService transService, boolean isProxy, ArrayList<Object> hasTransObjs) throws IllegalAccessException, InstantiationException {
@@ -48,6 +54,7 @@ public class TransUtil {
             return (Collection) object;
         }
         Collection result = null;
+        //暂时只支持list和set的子类 ，其他的集合暂时不支持
         if (param instanceof List) {
             result = new ArrayList();
         } else if (param instanceof Set) {
@@ -67,8 +74,9 @@ public class TransUtil {
 
     /**
      * 判断是否包含某个对象
+     *
      * @param list 对象集合
-     * @param obj 对象
+     * @param obj  对象
      * @return true 包含 false 不包含
      */
     private static boolean contains(List<Object> list, Object obj) {
@@ -99,6 +107,16 @@ public class TransUtil {
         }
         hasTransObjs.add(object);
         boolean isVo = false;
+        //如果要添加map翻译支持
+        if (transResultMap) {
+            if (object instanceof Map) {
+                Map tempMap = (Map) object;
+                for (Object mapValue : tempMap.values()) {
+                    transOne(mapValue, transService, isProxy, hasTransObjs);
+                }
+                return object;
+            }
+        }
         if (object instanceof VO) {
             transService.transOne((VO) object);
             isVo = true;
