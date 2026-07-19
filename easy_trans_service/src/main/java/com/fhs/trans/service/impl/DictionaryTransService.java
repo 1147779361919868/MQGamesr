@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
     /**
      * 是否使用redis 默认false
      */
+    @Value("${easy-trans.dict-use-redis:false}")
     private boolean isUseRedis;
 
 
@@ -74,6 +76,9 @@ public class DictionaryTransService implements ITransTypeService, InitializingBe
      * @param dicMap        字典map
      */
     public void refreshCache(String dictGroupCode, Map<String, String> dicMap) {
+        if (isUseRedis && redisCacheService == null) {
+            throw new RuntimeException("使用redis 请将 easy-trans.is-enable-redis 设置为true");
+        }
         dicMap.keySet().forEach(dictCode -> {
             if (!isUseRedis) {
                 dictionaryTransMap.put(dictGroupCode + "_" + dictCode, dicMap.get(dictCode));
