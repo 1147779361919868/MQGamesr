@@ -157,6 +157,7 @@ https://gitee.com/fhs-opensource/easy_trans/wikis/%E5%BF%AB%E9%80%9F%E5%BC%80%E5
 8、航天神舟智慧系统技术有限公司    
 9、小诺V2 https://gitee.com/xiaonuobase/snowy    
 10、山东大小同屏科技有限公司    
-11、山东酸橙网络科技有限公司    
+11、山东酸橙网络科技有限公司     
+12、桔子数字科技有限公司    
 # 求star
 如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
