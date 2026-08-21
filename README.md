@@ -15,12 +15,12 @@
 
 # 食用步骤
 ## 技术经理/架构 需要做的事情
-1 、先把maven 引用加上（如果1.2.7版本无法引用请使用1.2.6版本，中央仓库更新有延迟）
+1 、先把maven 引用加上（如果1.2.8版本无法引用请使用1.2.6版本，中央仓库更新有延迟）
 ``` xml
        <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-spring-boot-starter</artifactId>
-            <version>1.2.7</version>
+            <version>1.2.8</version>
         </dependency>
 ```
    Mybatis plus用户另外还需要加以下扩展：
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-mybatis-plus-extend</artifactId>
-            <version>1.2.7</version>
+            <version>1.2.8</version>
         </dependency>
 ```
   JPA 用户另外还需要加以下扩展：
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.fhs-opensource</groupId>
             <artifactId>easy-trans-jpa-extend</artifactId>
-            <version>1.2.7</version>
+            <version>1.2.8</version>
         </dependency>
 ```
  如果使用Redis请添加redis的引用(如果之前加过了请不要重复添加)
