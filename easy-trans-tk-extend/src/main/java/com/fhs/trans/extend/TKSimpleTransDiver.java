@@ -44,7 +44,7 @@ public class TKSimpleTransDiver  extends SqlSessionDaoSupport implements SimpleT
             Set<EntityColumn> columnList = EntityHelper.getPKColumns(targetClass);
             if (columnList.size() == 1) {
                 EntityColumn column = columnList.iterator().next();
-                example.createCriteria().andIn(column.getColumn(),ids);
+                example.createCriteria().andIn(column.getProperty(),ids);
             }else {
                 throw new IllegalArgumentException (targetClass + "没有配置id或者配置了多个id 属性");
             }

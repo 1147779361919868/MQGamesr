@@ -1,4 +1,0 @@
-com\fhs\trans\config\EasyTransJPAConfig.class
-com\fhs\trans\extend\JPATransableAdapter.class
-com\fhs\trans\extend\JPATransableRegister.class
-com\fhs\trans\extend\JPASimpleTransDiver.class

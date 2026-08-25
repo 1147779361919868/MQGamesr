@@ -1,8 +1,0 @@
-com\fhs\core\trans\util\ReflectUtils.class
-com\fhs\core\trans\vo\VO.class
-com\fhs\core\trans\anno\TransMethodResult.class
-com\fhs\core\trans\constant\TransType.class
-com\fhs\core\trans\anno\Trans.class
-com\fhs\core\trans\anno\TransTypes.class
-com\fhs\core\trans\vo\TransPojo.class
-com\fhs\core\trans\anno\AutoTrans.class

@@ -34,3 +34,9 @@ hs_err_pid*
 /easy_trans_mybatis_plus_extend/*.iml
 /easy_trans_service/*.iml
 /easy_trans_anno/*.iml
+/easy-trans-anno/target
+/easy-trans-jpa-extend/target
+/easy-trans-mybatis-plus-extend/target
+/easy-trans-service/target
+/easy-trans-spring-boot-starter/target
+/easy-trans-tk-extend/target
