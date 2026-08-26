@@ -39,7 +39,7 @@ public class ReflectUtils {
             field.setAccessible(true);
             field.set(obj, value);
         } catch (Exception e) {
-            log.error("给" + obj + "的字段" + fieldName + "设置值" + value + "错误", e);
+            log.info("给" + obj + "的字段" + fieldName + "设置值" + value + "错误", e);
         }
     }
 
