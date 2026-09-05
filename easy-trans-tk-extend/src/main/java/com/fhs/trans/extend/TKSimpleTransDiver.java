@@ -34,6 +34,11 @@ public class TKSimpleTransDiver  extends SqlSessionDaoSupport implements SimpleT
      */
     private Map<Class,Mapper> entityMapperMap = new HashMap<>();
 
+    /**
+     * key 是entityclass value是mapperclass的方便拼接sqlid
+     */
+    private Map<Class,Class> entityMapperClassMap = new HashMap<>();
+
     public TKSimpleTransDiver() {
     }
 
@@ -81,6 +86,15 @@ public class TKSimpleTransDiver  extends SqlSessionDaoSupport implements SimpleT
         throw new IllegalArgumentException (entity + "找不到对应的mapper，请检查");
     }
 
+    /**
+     * 根据
+     * @param entityClazz
+     * @return
+     */
+    public Class<? extends Mapper> getMapperClass(Class entityClazz){
+        return entityMapperClassMap.get(entityClazz);
+    }
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         //系统启动成功后获取所有的mapper 建立 entity和mapper的映射关系
@@ -98,6 +112,7 @@ public class TKSimpleTransDiver  extends SqlSessionDaoSupport implements SimpleT
                         ParameterizedType t = (ParameterizedType) type;
                         Class<?> entityClass = (Class<?>) t.getActualTypeArguments()[0];
                         entityMapperMap.put(entityClass,mapper);
+                        entityMapperClassMap.put(entityClass,mapperClass);
                     }
                 }
             } catch (Exception e) {
