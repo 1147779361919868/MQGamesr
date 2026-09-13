@@ -7,6 +7,9 @@ import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.service.impl.SimpleTransService;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.springframework.aop.framework.AdvisedSupport;
+import org.springframework.aop.framework.AopProxy;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import tk.mybatis.mapper.common.Mapper;
@@ -99,9 +102,14 @@ public class TKSimpleTransDiver  extends SqlSessionDaoSupport implements SimpleT
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         //系统启动成功后获取所有的mapper 建立 entity和mapper的映射关系
         List<Mapper> mappers = SpringContextUtil.getBeansByClass(Mapper.class);
-        for (Mapper mapper : mappers) {
+        Mapper mapper = null;
+        for (int i = 0; i < mappers.size(); i++) {
+            mapper = mappers.get(i);
             Field h = null;
             try {
+                if (AopUtils.isJdkDynamicProxy(mapper)) {{
+                    mapper = (Mapper) getJdkDynamicProxyTargetObject(mapper);
+                }}
                 h = mapper.getClass().getSuperclass().getDeclaredField("h");
                 h.setAccessible(true);
                 Object mapperProxy = h.get(mapper);
@@ -119,5 +127,16 @@ public class TKSimpleTransDiver  extends SqlSessionDaoSupport implements SimpleT
                 log.warn("mapper and  entity relation parse error,Mapper:" + mapper);
             }
         }
+    }
+
+
+    private  Object getJdkDynamicProxyTargetObject(Object proxy) throws Exception {
+        Field h = proxy.getClass().getSuperclass().getDeclaredField("h");
+        h.setAccessible(true);
+        AopProxy aopProxy = (AopProxy) h.get(proxy);
+        Field advised = aopProxy.getClass().getDeclaredField("advised");
+        advised.setAccessible(true);
+        Object target = ((AdvisedSupport) advised.get(aopProxy)).getTargetSource().getTarget();
+        return target;
     }
 }
