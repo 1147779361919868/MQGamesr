@@ -66,9 +66,9 @@ public interface ITransTypeService {
             setRef(trans.ref(), vo, valMap);
         }
         if (CheckUtils.isNotEmpty(trans.refs())) {
-            Stream.of(trans.refs()).forEach(ref -> {
-                setRef(ref, vo, valMap);
-            });
+            for (int i = 0; i < trans.refs().length; i++) {
+                setRef(trans.refs()[i], vo, valMap,i);
+            }
         }
     }
 
