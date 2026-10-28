@@ -5,10 +5,10 @@
     <parent>
         <groupId>com.fhs-opensource</groupId>
         <artifactId>easy-trans</artifactId>
-        <version>1.2.9</version>
+        <version>1.2.10</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <version>1.2.9</version>
+    <version>1.2.10</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>easy-trans-anno</artifactId>
 
