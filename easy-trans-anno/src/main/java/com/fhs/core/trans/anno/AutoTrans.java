@@ -57,5 +57,32 @@ public @interface AutoTrans {
      */
     Class<? extends VO> ref() default VO.class;
 
+    /**
+     * 全局缓存
+     * @return
+     */
+    boolean globalCache() default false;
+
+    /**
+     * globalCache 为true有效
+     * true 代表按照访问时间过期
+     * false 按照插入时间过期
+     * @return
+     */
+    boolean isAccess() default false;
+
+    /**
+     *  globalCache 为true有效
+     *  缓存时间 到秒
+     * @return
+     */
+    long cacheSeconds() default 1l;
+
+    /**
+     * globalCache 为true有效
+     * 最大缓存多少个
+     * @return
+     */
+    int maxCache() default 1000;
 
 }

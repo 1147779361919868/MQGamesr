@@ -89,7 +89,7 @@ public class RpcTransService extends SimpleTransService {
      * @param trans 配置
      * @return
      */
-    protected Map<String, Object> createTempTransCacheMap(Object po, Trans trans) {
+    protected Map<String, Object> createTempTransCacheMap(VO po, Trans trans) {
         if(!isEnableCloud){
             return super.createTempTransCacheMap(po,trans);
         }
@@ -103,7 +103,21 @@ public class RpcTransService extends SimpleTransService {
             fielVal = ConverterUtils.toString(basicVO.getObjContentMap().get(field));
             tempCacheTransMap.put(field, fielVal);
         }
+        if (transCacheSettMap.containsKey(trans.targetClassName())) {
+            TransCacheSett cacheSett = transCacheSettMap.get(trans.targetClassName());
+            put2GlobalCache(tempCacheTransMap, cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
+                    trans.targetClassName(), TransType.SIMPLE);
+        }
         return tempCacheTransMap;
+    }
+
+    /**
+     * 配置缓存
+     * @param type
+     * @param cacheSett
+     */
+    public void setTransCache(Object type,TransCacheSett cacheSett){
+        this.transCacheSettMap.put(ConverterUtils.toString(type),cacheSett);
     }
 
     @Override

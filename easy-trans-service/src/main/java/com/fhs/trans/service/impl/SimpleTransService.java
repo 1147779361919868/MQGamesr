@@ -11,6 +11,10 @@ import com.fhs.core.trans.vo.TransPojo;
 import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.ds.DataSourceSetter;
 import com.fhs.trans.listener.TransMessageListener;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -38,6 +42,11 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * 设置数据源
      */
     protected DataSourceSetter dataSourceSetter;
+
+    /**
+     * 缓存配置
+     */
+    protected Map<String, TransCacheSett> transCacheSettMap = new HashMap<>();
 
     /**
      * 注册翻译驱动
@@ -131,7 +140,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
         for (String target : namespaceFieldsGroupMap.keySet()) {
             final List<Field> fields = namespaceFieldsGroupMap.get(target);
             Trans tempTrans = fields.get(0).getAnnotation(Trans.class);
-            Set<Object> ids = new HashSet<>();
+            final Set<Object> ids = new HashSet<>();
             objList.forEach(obj -> {
                 for (Field field : fields) {
                     try {
@@ -154,10 +163,17 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
 
             });
             if (!ids.isEmpty()) {
-                List<? extends VO> dbDatas = findByIds(new ArrayList<Object>(ids), tempTrans);
-                for (VO vo : dbDatas) {
-                    threadLocalCache.get().put(getTargetClassName(tempTrans) + "_" + getUniqueKey(vo, tempTrans),
-                            createTempTransCacheMap(vo, tempTrans));
+                if (transCacheSettMap.containsKey(getTargetClassName(tempTrans))) {
+                    Set<Object> newIds = initLocalFromGlobalCache(threadLocalCache, ids, getTargetClassName(tempTrans), TransType.SIMPLE);
+                    ids.clear();
+                    ids.addAll(newIds);
+                }
+                if(!ids.isEmpty()) {
+                    List<? extends VO> dbDatas = findByIds(new ArrayList<Object>(ids), tempTrans);
+                    for (VO vo : dbDatas) {
+                        threadLocalCache.get().put(getTargetClassName(tempTrans) + "_" + getUniqueKey(vo, tempTrans),
+                                createTempTransCacheMap(vo, tempTrans));
+                    }
                 }
             }
         }
@@ -216,7 +232,11 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @return 缓存
      */
     private Map<String, Object> getTempTransCacheMap(Trans tempTrans, Object pkey) {
-        if (this.threadLocalCache.get() == null) {
+        String className = getTargetClassName(tempTrans);
+        if(transCacheSettMap.containsKey(className) && getFromGlobalCache(pkey,className,TransType.SIMPLE) !=null){
+            return getFromGlobalCache(pkey,className,TransType.SIMPLE);
+        }
+        else if (this.threadLocalCache.get() == null) {
             if (CheckUtils.isNullOrEmpty(pkey)) {
                 return new HashMap<>();
             }
@@ -245,7 +265,7 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
      * @param trans 配置
      * @return
      */
-    protected Map<String, Object> createTempTransCacheMap(Object po, Trans trans) {
+    protected Map<String, Object> createTempTransCacheMap(VO po, Trans trans) {
         String fielVal = null;
         Map<String, Object> tempCacheTransMap = new LinkedHashMap<>();
         if (po == null) {
@@ -256,6 +276,12 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
             tempCacheTransMap.put(field, fielVal);
         }
         tempCacheTransMap.put("targetObject", po);
+        String className = getTargetClassName(trans);
+        if (transCacheSettMap.containsKey(className)) {
+            TransCacheSett cacheSett = transCacheSettMap.get(className);
+            put2GlobalCache(tempCacheTransMap, cacheSett.isAccess(), cacheSett.getCacheSeconds(), cacheSett.getMaxCache(), po.getPkey(),
+                    className, TransType.SIMPLE);
+        }
         return tempCacheTransMap;
     }
 
@@ -263,6 +289,17 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         TransService.registerTransType(TransType.SIMPLE, this);
+    }
+
+    /**
+     * 配置缓存
+     *
+     * @param type
+     * @param cacheSett
+     */
+    public void setTransCache(Object type, TransCacheSett cacheSett) {
+        Class typeClass = (Class) type;
+        this.transCacheSettMap.put(typeClass.getName(), cacheSett);
     }
 
     /**
@@ -288,5 +325,28 @@ public class SimpleTransService implements ITransTypeService, InitializingBean {
          * @return
          */
         VO findById(Serializable id, Class<? extends VO> targetClass, String uniqueField);
+    }
+
+
+    /**
+     * 翻译缓存配置
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TransCacheSett {
+        /**
+         * true 按照访问时间计算过期时间 false按照插入时间计算过期时间
+         */
+        private boolean isAccess = false;
+        /**
+         * 默认过期时间秒
+         */
+        private long cacheSeconds = 5;
+        /**
+         * 最大缓存数量
+         */
+        private int maxCache = 1000;
     }
 }
