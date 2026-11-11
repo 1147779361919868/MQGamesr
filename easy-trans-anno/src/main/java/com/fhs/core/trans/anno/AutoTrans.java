@@ -34,6 +34,7 @@ public @interface AutoTrans {
      *
      * @return 默认为true 如果是false的话
      */
+    @Deprecated
     boolean useCache() default false;
 
     /**
@@ -41,6 +42,7 @@ public @interface AutoTrans {
      *
      * @return 默认false
      */
+    @Deprecated
     boolean useRedis() default false;
 
     /**
