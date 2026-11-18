@@ -1,9 +1,11 @@
 package com.fhs.trans.config;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fhs.cache.service.RedisCacheService;
 import com.fhs.cache.service.impl.RedisCacheServiceImpl;
 import com.fhs.common.constant.TransConfig;
 import com.fhs.common.spring.SpringContextUtil;
+import com.fhs.core.trans.vo.VO;
 import com.fhs.trans.advice.EasyTransResponseBodyAdvice;
 import com.fhs.trans.aop.TransMethodResultAop;
 import com.fhs.trans.controller.TransProxyController;
@@ -32,6 +34,7 @@ import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.Id;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -245,5 +248,7 @@ public class TransServiceConfig implements InitializingBean {
             throw new IllegalArgumentException("easytrans 如果开启多数据源支持，需要自定义 DataSourceSetter 来切换数据源");
         }
         TransConfig.dataSourceSetter = this.dataSourceSetter;
+        VO.ID_ANNO.add(TableId.class);
+        VO.ID_ANNO.add(Id.class);
     }
 }

@@ -2,7 +2,6 @@ package com.fhs.core.trans.vo;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fhs.core.trans.util.ReflectUtils;
 
@@ -27,6 +26,9 @@ public interface VO {
     @TableField(exist = false)
     @JsonIgnore
     Map<Class<?>, Field> ID_FIELD_CACHE_MAP = new HashMap<>();
+
+    Set<Class> ID_ANNO = new HashSet<>();
+
 
     ThreadLocal<Map<String, Map<String, String>>> TRANS_MAP_CACHE = new ThreadLocal<>();
 
@@ -83,20 +85,28 @@ public interface VO {
         if (ID_FIELD_CACHE_MAP.containsKey(this.getClass())) {
             return ID_FIELD_CACHE_MAP.get(this.getClass());
         }
-        List<Field> fieldList = ReflectUtils.getAnnotationField(this.getClass(), javax.persistence.Id.class);
-        if (fieldList.size() == 0) {
-            fieldList = ReflectUtils.getAnnotationField(this.getClass(), TableId.class);
-            if (fieldList.size() == 0) {
-                Field idField = ReflectUtils.getDeclaredField(this.getClass(), "id");
-                fieldList = Arrays.asList(idField);
-                if (idField ==null && isThrowError) {
-                    throw new RuntimeException("找不到" + this.getClass() + "的id注解");
-                }
+        Field idField = null;
+        List<Field> fieldList = null;
+        // jpa
+        for (Class anno : ID_ANNO) {
+            fieldList = ReflectUtils.getAnnotationField(this.getClass(), anno);
+            if (!fieldList.isEmpty()) {
+                idField = fieldList.get(0);
+                break;
             }
         }
-        fieldList.get(0).setAccessible(true);
-        ID_FIELD_CACHE_MAP.put(this.getClass(), fieldList.get(0));
-        return fieldList.get(0);
+        if(idField==null){
+            idField = ReflectUtils.getDeclaredField(this.getClass(), "id");
+            if (idField == null && isThrowError) {
+                throw new RuntimeException("找不到" + this.getClass() + "的id注解");
+            }
+        }
+        if (idField != null) {
+            idField.setAccessible(true);
+            ID_FIELD_CACHE_MAP.put(this.getClass(), idField);
+            return idField;
+        }
+        return null;
     }
 
 
