@@ -172,3 +172,7 @@ https://gitee.com/fhs-opensource/easy_trans/wikis/%E5%BF%AB%E9%80%9F%E5%BC%80%E5
 15、江西云牛科技    
 # 求star
 如果您觉得本软件好用，请帮忙给个star吧，如果您能发动身边的同项目组同事一起给个star那就太感谢您了
+
+# 作者二维码
+加作者二维码邀请进入官方群
+![输入图片说明](images/qr.jpg)
